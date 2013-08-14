@@ -26,3 +26,30 @@ test("creating a ViewModel", function() {
 
 	console.log(me);
 });
+
+test("changing property values", function() {
+	var Person = ko.ViewModel.extend({
+		observables: {
+			firstName: "",
+			lastName: "",
+			fullName: function() {
+				return this.firstName() + " " + this.lastName();
+			}
+		}
+	});
+
+	var me = new Person({
+		firstName: "Jonathan",
+		lastName: "Creamer"
+	});
+
+	ok(me.on, "ViewModel should extend events");
+
+	var called = false;
+	me.on("change:firstName", function() {
+		called = true;
+	});
+	me.firstName('foo');
+
+	ok(called, "should call the change event");
+});
