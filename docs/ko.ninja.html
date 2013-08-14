@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>ko.ninja.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, target-densitydpi=160dpi, initial-scale=1.0; maximum-scale=1.0; user-scalable=0;">
+  <link rel="stylesheet" media="all" href="docco.css" />
+</head>
+<body>
+  <div id="container">
+    <div id="background"></div>
+    
+    <ul class="sections">
+        
+          <li id="title">
+              <div class="annotation">
+                  <h1>ko.ninja.js</h1>
+              </div>
+          </li>
+        
+        
+        
+        <li id="section-1">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-1">&#182;</a>
+              </div>
+              
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="comment">/*! ko.ninja - v0.0.1 - 2013-08-14
+* Copyright (c) 2013 ; Licensed  */</span>
+(<span class="function"><span class="keyword">function</span> <span class="params">(root, factory)</span> {</span>
+    <span class="keyword">if</span> (<span class="keyword">typeof</span> define === <span class="string">"function"</span> &amp;&amp; define.amd) {
+        define([<span class="string">"knockout"</span>, <span class="string">"underscore"</span>], factory);
+    } <span class="keyword">else</span> <span class="keyword">if</span> (<span class="keyword">typeof</span> exports === <span class="string">"object"</span>) {
+        module.exports = factory(require(<span class="string">"knockout"</span>), require(<span class="string">"underscore"</span>));
+    } <span class="keyword">else</span> {
+        root.ko = factory(root.ko, root._);
+    }
+}(<span class="keyword">this</span>, <span class="function"><span class="keyword">function</span> <span class="params">(ko, _)</span> {</span>
+
+<span class="keyword">var</span> extend = <span class="keyword">function</span>(protoProps, staticProps) {
+    <span class="keyword">var</span> parent = <span class="keyword">this</span>,
+        Surrogate,
+        child;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-2">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-2">&#182;</a>
+              </div>
+              <p>The constructor function for the new subclass is either defined by you
+(the &quot;constructor&quot; property in your <code>extend</code> definition), or defaulted
+by us to simply call the parent&#39;s constructor.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (protoProps &amp;&amp; _.has(protoProps, <span class="string">'constructor'</span>)) {
+        child = protoProps.constructor;
+    } <span class="keyword">else</span> {
+        child = <span class="keyword">function</span>() { <span class="keyword">return</span> parent.apply(<span class="keyword">this</span>, arguments); };
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-3">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-3">&#182;</a>
+              </div>
+              <p>Add static properties to the constructor function, if supplied.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _.extend(child, parent, staticProps);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-4">&#182;</a>
+              </div>
+              <p>Set the prototype chain to inherit from <code>parent</code>, without calling
+<code>parent</code>&#39;s constructor function.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    Surrogate = <span class="keyword">function</span>(){ <span class="keyword">this</span>.constructor = child; };
+    Surrogate.prototype = parent.prototype;
+    child.prototype = <span class="keyword">new</span> Surrogate();</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-5">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-5">&#182;</a>
+              </div>
+              <p>Add prototype properties (instance properties) to the subclass,
+if supplied.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (protoProps) {
+        _.extend(child.prototype, protoProps);
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-6">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-6">&#182;</a>
+              </div>
+              <p>Set a convenience property in case the parent&#39;s prototype is needed
+later.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    child.__super__ = parent.prototype;
+
+    <span class="keyword">if</span> (protoProps.name) {
+        child.prototype.toString = <span class="keyword">function</span>() {
+            <span class="keyword">return</span> protoProps.name;
+        };
+    }        
+
+    <span class="keyword">return</span> child;
+};
+
+<span class="comment">/**
+* The events manager
+*
+* @class app.events
+*/</span>
+<span class="keyword">var</span> Events = {
+    <span class="comment">/**
+     * Bind an event to a `callback` function. Passing `"all"` will bind
+     * the callback to all events fired.
+     * @method on
+     * @param  {String} name Name of the event to subscribe to
+     * @param  {Function} callback Callback to fire when the event fires
+     * @param  {[type]} context Sets the context of the callback
+     * @return Returns `this`
+     */</span>
+    on: <span class="keyword">function</span>(name, callback, context) {
+        <span class="keyword">if</span> (!eventsApi(<span class="keyword">this</span>, <span class="string">'on'</span>, name, [callback, context]) || !callback) <span class="keyword">return</span> <span class="keyword">this</span>;
+        <span class="keyword">this</span>._events || (<span class="keyword">this</span>._events = {});
+        <span class="keyword">var</span> events = <span class="keyword">this</span>._events[name] || (<span class="keyword">this</span>._events[name] = []);
+        events.push({callback: callback, context: context, ctx: context || <span class="keyword">this</span>});
+        <span class="keyword">return</span> <span class="keyword">this</span>;
+    },
+
+    <span class="comment">/**
+     * Bind an event to only be triggered a single time. After the first time
+     * the callback is invoked, it will be removed.
+     * @method once
+     * @param  {String} name Name of the event to subscribe to
+     * @param  {Function} callback Callback to fire when the event fires
+     * @param  {[type]} context Sets the context of the callback
+     * @return Returns `this`
+     */</span>
+    once: <span class="keyword">function</span>(name, callback, context) {
+        <span class="keyword">if</span> (!eventsApi(<span class="keyword">this</span>, <span class="string">'once'</span>, name, [callback, context]) || !callback) <span class="keyword">return</span> <span class="keyword">this</span>;
+        <span class="keyword">var</span> self = <span class="keyword">this</span>;
+        <span class="keyword">var</span> once = _.once(<span class="keyword">function</span>() {
+            self.off(name, once);
+            callback.apply(<span class="keyword">this</span>, arguments);
+        });
+        once._callback = callback;
+        <span class="keyword">return</span> <span class="keyword">this</span>.on(name, once, context);
+    },
+
+    
+    <span class="comment">/**
+     * Remove one or many callbacks. If `context` is null, removes all
+     * callbacks with that function. If `callback` is null, removes all
+     * callbacks for the event. If `name` is null, removes all bound
+     * callbacks for all events.
+     * @method off
+     * @param  {String} name Name of the event to turn off
+     * @param  {Function} callback Callback to turn off
+     * @param  {[type]} context Sets the context of the callback
+     * @return Returns `this`
+     */</span>
+    off: <span class="keyword">function</span>(name, callback, context) {
+        <span class="keyword">var</span> retain, ev, events, names, i, l, j, k;
+        <span class="keyword">if</span> (!<span class="keyword">this</span>._events || !eventsApi(<span class="keyword">this</span>, <span class="string">'off'</span>, name, [callback, context])) <span class="keyword">return</span> <span class="keyword">this</span>;
+        <span class="keyword">if</span> (!name &amp;&amp; !callback &amp;&amp; !context) {
+            <span class="keyword">this</span>._events = {};
+            <span class="keyword">return</span> <span class="keyword">this</span>;
+        }
+
+        names = name ? [name] : _.keys(<span class="keyword">this</span>._events);
+        <span class="keyword">for</span> (i = <span class="number">0</span>, l = names.length; i &lt; l; i++) {
+            name = names[i];
+            <span class="keyword">if</span> (events = <span class="keyword">this</span>._events[name]) {
+                <span class="keyword">this</span>._events[name] = retain = [];
+                <span class="keyword">if</span> (callback || context) {
+                    <span class="keyword">for</span> (j = <span class="number">0</span>, k = events.length; j &lt; k; j++) {
+                        ev = events[j];
+                        <span class="keyword">if</span> ((callback &amp;&amp; callback !== ev.callback &amp;&amp; callback !== ev.callback._callback) ||
+                            (context &amp;&amp; context !== ev.context)) {
+                            retain.push(ev);
+                        }
+                    }
+                }
+                <span class="keyword">if</span> (!retain.length) <span class="keyword">delete</span> <span class="keyword">this</span>._events[name];
+            }
+        }
+
+        <span class="keyword">return</span> <span class="keyword">this</span>;
+    },
+
+    <span class="comment">/**
+     * Trigger one or many events, firing all bound callbacks. Callbacks are
+     * passed the same arguments as `trigger` is, apart from the event name
+     * (unless you're listening on `"all"`, which will cause your callback to
+     * receive the true name of the event as the first argument).
+     * @method trigger
+     * @param  {String} name The name of the event to trigger
+     * @return Returns `this`
+     */</span>
+    trigger: <span class="keyword">function</span>(name) {
+        <span class="keyword">if</span> (!<span class="keyword">this</span>._events) <span class="keyword">return</span> <span class="keyword">this</span>;
+        <span class="keyword">var</span> args = Array.prototype.slice.call(arguments, <span class="number">1</span>);
+        <span class="keyword">if</span> (!eventsApi(<span class="keyword">this</span>, <span class="string">'trigger'</span>, name, args)) <span class="keyword">return</span> <span class="keyword">this</span>;
+        <span class="keyword">var</span> events = <span class="keyword">this</span>._events[name];
+        <span class="keyword">var</span> allEvents = <span class="keyword">this</span>._events.all;
+        <span class="keyword">if</span> (events) triggerEvents(events, args);
+        <span class="keyword">if</span> (allEvents) triggerEvents(allEvents, arguments);
+        <span class="keyword">return</span> <span class="keyword">this</span>;
+    },
+
+    <span class="comment">/**
+     * Tell this object to stop listening to either specific events ... or
+     * to every object it's currently listening to.
+     * @method stopListening
+     * @param  {Object} obj Object to stop listening to events on
+     * @param  {String} name Name of the event to stop listening for
+     * @param  {Function} callback
+     * @return Returns `this`
+     */</span>
+    stopListening: <span class="keyword">function</span>(obj, name, callback) {
+        <span class="keyword">var</span> listeners = <span class="keyword">this</span>._listeners;
+        <span class="keyword">if</span> (!listeners) <span class="keyword">return</span> <span class="keyword">this</span>;
+        <span class="keyword">var</span> deleteListener = !name &amp;&amp; !callback;
+        <span class="keyword">if</span> (<span class="keyword">typeof</span> name === <span class="string">'object'</span>) callback = <span class="keyword">this</span>;
+        <span class="keyword">if</span> (obj) (listeners = {})[obj._listenerId] = obj;
+        <span class="keyword">for</span> (<span class="keyword">var</span> id <span class="keyword">in</span> listeners) {
+            listeners[id].off(name, callback, <span class="keyword">this</span>);
+            <span class="keyword">if</span> (deleteListener) <span class="keyword">delete</span> <span class="keyword">this</span>._listeners[id];
+        }
+        <span class="keyword">return</span> <span class="keyword">this</span>;
+    }
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-7">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-7">&#182;</a>
+              </div>
+              <p>Regular expression used to split event strings.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="keyword">var</span> eventSplitter = <span class="regexp">/\s+/</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-8">&#182;</a>
+              </div>
+              <p>Implement fancy features of the Events API such as multiple event
+names <code>&quot;change blur&quot;</code> and jQuery-style event maps <code>{change: action}</code>
+in terms of the existing API.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="keyword">var</span> eventsApi = <span class="keyword">function</span>(obj, action, name, rest) {
+    <span class="keyword">if</span> (!name) <span class="keyword">return</span> <span class="literal">true</span>;</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-9">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-9">&#182;</a>
+              </div>
+              <p>Handle event maps.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (<span class="keyword">typeof</span> name === <span class="string">'object'</span>) {
+        <span class="keyword">for</span> (<span class="keyword">var</span> key <span class="keyword">in</span> name) {
+            obj[action].apply(obj, [key, name[key]].concat(rest));
+        }
+        <span class="keyword">return</span> <span class="literal">false</span>;
+    }</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-10">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-10">&#182;</a>
+              </div>
+              <p>Handle space separated event names.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    <span class="keyword">if</span> (eventSplitter.test(name)) {
+        <span class="keyword">var</span> names = name.split(eventSplitter);
+        <span class="keyword">for</span> (<span class="keyword">var</span> i = <span class="number">0</span>, l = names.length; i &lt; l; i++) {
+            obj[action].apply(obj, [names[i]].concat(rest));
+        }
+        <span class="keyword">return</span> <span class="literal">false</span>;
+    }
+
+    <span class="keyword">return</span> <span class="literal">true</span>;
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-11">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-11">&#182;</a>
+              </div>
+              <p>A difficult-to-believe, but optimized internal dispatch function for
+triggering events. Tries to keep the usual cases speedy (most internal
+Backbone events have 3 arguments).</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="keyword">var</span> triggerEvents = <span class="keyword">function</span>(events, args) {
+    <span class="keyword">var</span> ev, i = -<span class="number">1</span>, l = events.length, a1 = args[<span class="number">0</span>], a2 = args[<span class="number">1</span>], a3 = args[<span class="number">2</span>];
+    <span class="keyword">switch</span> (args.length) {
+        <span class="keyword">case</span> <span class="number">0</span>: <span class="keyword">while</span> (++i &lt; l) (ev = events[i]).callback.call(ev.ctx); <span class="keyword">return</span>;
+        <span class="keyword">case</span> <span class="number">1</span>: <span class="keyword">while</span> (++i &lt; l) (ev = events[i]).callback.call(ev.ctx, a1); <span class="keyword">return</span>;
+        <span class="keyword">case</span> <span class="number">2</span>: <span class="keyword">while</span> (++i &lt; l) (ev = events[i]).callback.call(ev.ctx, a1, a2); <span class="keyword">return</span>;
+        <span class="keyword">case</span> <span class="number">3</span>: <span class="keyword">while</span> (++i &lt; l) (ev = events[i]).callback.call(ev.ctx, a1, a2, a3); <span class="keyword">return</span>;
+        <span class="keyword">default</span>: <span class="keyword">while</span> (++i &lt; l) (ev = events[i]).callback.apply(ev.ctx, args);
+    }
+};
+
+<span class="keyword">var</span> listenMethods = {listenTo: <span class="string">'on'</span>, listenToOnce: <span class="string">'once'</span>};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-12">&#182;</a>
+              </div>
+              <p>Inversion-of-control versions of <code>on</code> and <code>once</code>. Tell <em>this</em> object to
+listen to an event in another object ... keeping track of what it&#39;s
+listening to.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>_.each(listenMethods, <span class="keyword">function</span>(implementation, method) {
+    Events[method] = <span class="keyword">function</span>(obj, name, callback) {
+        <span class="keyword">var</span> listeners = <span class="keyword">this</span>._listeners || (<span class="keyword">this</span>._listeners = {});
+        <span class="keyword">var</span> id = obj._listenerId || (obj._listenerId = _.uniqueId(<span class="string">'l'</span>));
+        listeners[id] = obj;
+        <span class="keyword">if</span> (<span class="keyword">typeof</span> name === <span class="string">'object'</span>) callback = <span class="keyword">this</span>;
+        obj[implementation](name, callback, <span class="keyword">this</span>);
+        <span class="keyword">return</span> <span class="keyword">this</span>;
+    };
+});</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-13">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h3">
+                <a class="pilcrow" href="#section-13">&#182;</a>
+              </div>
+              <h3>ko.ViewModel</h3>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="keyword">var</span> ViewModel = <span class="function"><span class="keyword">function</span> <span class="title">ViewModel</span><span class="params">(options)</span> {</span>   
+    options = options || {};
+
+    setupObservables.call(<span class="keyword">this</span>, options);
+
+    <span class="keyword">if</span> (<span class="keyword">this</span>.validation) {
+        setupValidation.call(<span class="keyword">this</span>);
+    }
+
+    <span class="keyword">this</span>.initialize.call(<span class="keyword">this</span>, options);
+};
+
+_.extend(ViewModel.prototype, Events, {
+    initialize: <span class="keyword">function</span>() {}
+});
+
+<span class="keyword">var</span> setupObservables = <span class="keyword">function</span>(options) {
+    <span class="keyword">var</span> self = <span class="keyword">this</span>,        
+        computedObservables = _.functions(<span class="keyword">this</span>.observables);
+
+    computedObservables = _.reduce(<span class="keyword">this</span>.observables, <span class="keyword">function</span>(memo, value, prop) {
+        <span class="keyword">if</span> (_.isObject(value) &amp;&amp; !_.isArray(value) &amp;&amp; (value.read || value.write)) {
+            memo.push(prop);
+        }
+        <span class="keyword">return</span> memo;
+    }, computedObservables);</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-14">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-14">&#182;</a>
+              </div>
+              <p>Process the observables first</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _.each(_.omit(<span class="keyword">this</span>.observables, computedObservables), <span class="function"><span class="keyword">function</span> <span class="params">(value, prop)</span> {</span>
+        <span class="keyword">if</span> (_.isArray(value)) {
+            <span class="keyword">if</span> (ko.isObservable(options[prop])) {
+                self[prop] = options[prop];
+            }
+            <span class="keyword">else</span> {
+                self[prop] = ko.observableArray((options[prop] || value).slice(<span class="number">0</span>));
+            }
+        }
+        <span class="keyword">else</span> {
+            <span class="keyword">if</span> (ko.isObservable(options[prop])) {
+                self[prop] = options[prop];
+            }
+            <span class="keyword">else</span> {
+                self[prop] = ko.observable(options[prop] || value);
+            }
+        }
+    });</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-15">
+            <div class="annotation">
+              
+              <div class="pilwrap ">
+                <a class="pilcrow" href="#section-15">&#182;</a>
+              </div>
+              <p>Now process the computedObservables</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>    _.each(_.pick(<span class="keyword">this</span>.observables, computedObservables), <span class="keyword">function</span>(value, prop) {
+        self[prop] = ko.computed(self.observables[prop], self);
+    });
+};
+
+<span class="keyword">var</span> setupValidation = <span class="keyword">function</span>() {
+
+};</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="pilwrap for-h3">
+                <a class="pilcrow" href="#section-16">&#182;</a>
+              </div>
+              <h3>ko.Model</h3>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="keyword">var</span> Model = <span class="keyword">function</span>() {
+    
+};
+
+_.extend(Model.prototype, Events);
+
+ko.Model = Model;
+ko.ViewModel = ViewModel;
+
+ko.Model.extend = ko.ViewModel.extend = extend;
+
+<span class="keyword">return</span> ko;
+
+}));</pre></div></div>
+            
+        </li>
+        
+    </ul>
+  </div>
+</body>
+</html>
