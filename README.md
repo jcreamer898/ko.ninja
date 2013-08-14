@@ -51,7 +51,7 @@ me.on("change:firstName", function(value) {
 	// value === "foo"
 });
 
-me.firstName("foo"); // "Jonathan"
+me.firstName("foo");
 ```
 
 # Future Features
