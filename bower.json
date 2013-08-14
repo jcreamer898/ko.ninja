@@ -1,0 +1,17 @@
+{
+  "name": "ko.ninja",
+  "version": "0.0.1",
+  "main": "dist/ko.ninja.js",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "knockout.js": "~2.3.0",
+    "qunit": "~1.12.0",
+    "underscore": "~1.5.1"
+  }
+}
