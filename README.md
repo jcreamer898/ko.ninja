@@ -7,6 +7,9 @@ The idea behind `ko.ninja` is that knockout has amazing two way binding function
 
 `ko.ninja` provides methods to create view models in a clean and reusable fashion that provide some built in helpers.
 
+### ko.ViewModel
+The `ko.ViewModel` is a constructor to define ViewModels.
+
 ```js
 var Person = ko.ViewModel.extend({
     observables: {
