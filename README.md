@@ -3,9 +3,9 @@ ko.ninja
 
 A framework for building awesome knockout.js apps.
 
-The idea behind `ko.ninja` is that knockout has amazing two way binding functionallity, but not a lot of conventions for how to write ViewModels and such.
+The idea behind **ko.ninja** is that knockout has amazing two way binding functionallity, but not a lot of conventions for how to write ViewModels and such.
 
-`ko.ninja` provides methods to create view models in a clean and reusable fashion that provide some built in helpers.
+ko.ninja provides methods to create view models in a clean and reusable fashion that provide some built in helpers.
 
 ### ko.ViewModel
 The `ko.ViewModel` is a constructor to define ViewModels.
@@ -52,6 +52,31 @@ me.on("change:firstName", function(value) {
 });
 
 me.firstName("foo");
+```
+
+# Installation
+Just add Underscore.js and ko.ninja.js to your page beneath knockout.js and you're good to go!
+ko.ninja is also node and AMD compliant as well.
+
+# Development
+ko.ninja is built using grunt and bower. To run the build...
+
+```
+npm install && bower install
+```
+
+To run the tests...
+
+```
+grunt test
+# or
+grunt connect:test # to run the tests in your browser at localhost:8002
+```
+
+There is also a built in server to run the provided examples...
+
+```
+grunt connect:server # localhost:8000
 ```
 
 # Future Features
