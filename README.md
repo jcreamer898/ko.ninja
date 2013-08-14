@@ -61,13 +61,13 @@ ko.ninja is also node and AMD compliant as well.
 # Development
 ko.ninja is built using grunt and bower. To run the build...
 
-```
+```bash
 npm install && bower install
 ```
 
 To run the tests...
 
-```
+```bash
 grunt test
 # or
 grunt connect:test # to run the tests in your browser at localhost:8002
@@ -75,7 +75,7 @@ grunt connect:test # to run the tests in your browser at localhost:8002
 
 There is also a built in server to run the provided examples...
 
-```
+```bash
 grunt connect:server # localhost:8000
 ```
 
