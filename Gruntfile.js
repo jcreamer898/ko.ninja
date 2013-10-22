@@ -109,7 +109,7 @@ module.exports = function(grunt) {
                     middleware: function(connect, options) {
                         return [
                             connect.static('bower_components'),
-                            connect.static('dist'),
+                            connect.static('lib'),
                             connect.static(options.base),
                             connect.directory(options.base)
                         ];

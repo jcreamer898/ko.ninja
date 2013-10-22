@@ -1,4 +1,4 @@
-/*! ko.ninja - v0.0.1 - 2013-08-14
+/*! ko.ninja - v0.0.1 - 2013-10-11
 * Copyright (c) 2013 ; Licensed  */
 (function (root, factory) {
     if (typeof define === "function" && define.amd) {
