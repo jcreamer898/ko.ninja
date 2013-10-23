@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>ko.ninja - localStorage</title>
+    <link rel="stylesheet" type="text/css" href="http://knockoutjs.com/css/styles.css" />
+</head>
+<body id="wrapper">
+
+    <br /><br />
+
+    <div class="liveExample">
+
+        <div id="list">
+            <form data-bind="submit:addItem">
+                Add item: <input type="text" data-bind='value:itemToAdd, valueUpdate: "afterkeydown"' />
+                <button type="submit" data-bind="enable: itemToAdd().length > 0">Add</button>
+            </form>
+             
+            <p>Your values:</p>
+            <select multiple="multiple" height="5" data-bind="options:allItems, selectedOptions:selectedItems"> </select>
+             
+            <div>
+                <button data-bind="click: removeSelected, enable: selectedItems().length > 0">Remove</button>
+                <button data-bind="click: sortItems, enable: allItems().length > 1">Sort</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="/knockout.js/knockout.js"></script>
+    <script src="/underscore/underscore.js"></script>
+    <script src="/jquery/jquery.js"></script>
+    <script src="../ko.ninja.js"></script>
+    <script type="text/javascript">
+        var ListViewModel = ko.ViewModel.extend({
+
+            el: '#list',
+
+            observables: {
+                itemToAdd: '',
+                allItems: ['Green Eggs', 'Ham'],
+                selectedItems: ['Ham'],
+                id: '1'
+            },
+
+            model: {
+                storage: 'localStorage',
+                name: 'list'
+            },
+
+            addItem: function () {
+                if ((this.itemToAdd() != '') && (this.allItems.indexOf(this.itemToAdd()) < 0)) {
+                    this.allItems.push(this.itemToAdd());
+                }
+                this.itemToAdd('');
+            },
+
+            removeSelected: function () {
+                this.allItems.removeAll(this.selectedItems());
+                this.selectedItems([]);
+            },
+
+            sortItems: function () {
+                this.allItems.sort();
+            }
+
+        });
+
+        new ListViewModel();
+
+    </script>
+
+</body>
+</html>

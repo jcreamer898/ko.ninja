@@ -1,3 +1,5 @@
+/*global start, asyncTest */
+
 QUnit.start();
 
 module('ko.ViewModel');
@@ -131,7 +133,7 @@ asyncTest('when we find multiple records', function () {
 
 	this.model.find({
 		lastName: 'Cadenhead'
-	}).done(function (data, err) {
+	}).done(function (data) {
 		equal(data.length, 2, 'it should get both records with the lastName of Cadenhead');
 		equal(data[0].lastName, 'Cadenhead', 'it should have Cadenhead as the lastName of the first record');
 		equal(data[0].lastName, 'Cadenhead', 'it should have Cadenhead as the lastName of the second record');

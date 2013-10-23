@@ -115,6 +115,21 @@ module.exports = function(grunt) {
                         ];
                     }
                 }
+            },
+            server: {
+                options: {
+                    port: 8003,
+                    base: 'examples',
+                    keepalive: true,
+                    middleware: function(connect, options) {
+                        return [
+                            connect.static('bower_components'),
+                            connect.static('lib'),
+                            connect.static(options.base),
+                            connect.directory(options.base)
+                        ];
+                    }
+                }
             }
         }
     });
