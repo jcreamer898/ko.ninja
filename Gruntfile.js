@@ -6,15 +6,22 @@ module.exports = function(grunt) {
         // Metadata.
         pkg: grunt.file.readJSON('package.json'),
         banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' + '<%= grunt.template.today("yyyy-mm-dd") %>\n' + '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' + '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' + ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
-        // Task configuration.
-        concat: {
-            options: {
-                banner: '<%= banner %>',
-                stripBanners: true
-            },
-            dist: {
-                src: ['lib/<%= pkg.name %>.js'],
-                dest: 'dist/<%= pkg.name %>.js'
+        
+        requirejs: {
+            compile: {
+                options: {
+                    banner: '<%= banner %>',
+                    baseUrl: 'lib/',
+                    out: 'dist/<%= pkg.name %>.min.js',
+                    name: 'ko.ninja',
+                    preserveLicenseComments: false,
+                    optimize: 'uglify2',
+                    mainConfigFile: 'lib/build.js',
+                    exclude: [
+                        'underscore',
+                        'knockout'
+                    ]
+                }
             }
         },
         uglify: {
@@ -22,7 +29,7 @@ module.exports = function(grunt) {
                 banner: '<%= banner %>'
             },
             dist: {
-                src: '<%= concat.dist.dest %>',
+                src: 'dist/<%= pkg.name %>.amd.min.js',
                 dest: 'dist/<%= pkg.name %>.min.js'
             }
         },
@@ -51,7 +58,9 @@ module.exports = function(grunt) {
                     define: true, 
                     require: true,
                     console: true,
-                    equal: true
+                    equal: true,
+                    asyncTest: true,
+                    start: true
                 }
             },
             gruntfile: {
@@ -135,15 +144,15 @@ module.exports = function(grunt) {
     });
 
     // These plugins provide necessary tasks.
-    grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-contrib-connect');
+    grunt.loadNpmTasks('grunt-contrib-requirejs');
 
     // Default task.
-    grunt.registerTask('default', ['jshint', 'concat', 'uglify']);
+    grunt.registerTask('default', ['jshint', 'requirejs']);
     grunt.registerTask('test', ['connect:qunit', 'qunit']);
 
 };

@@ -33,40 +33,45 @@
         require(['ko.ninja'], function (ko) {
             var ListViewModel = ko.ViewModel.extend({
 
-                el: '#list',
+            el: '#list',
 
-                observables: {
-                    itemToAdd: '',
-                    allItems: ['Green Eggs', 'Ham'],
-                    selectedItems: ['Ham'],
-                    id: '1'
+            observables: {
+                itemToAdd: '',
+                allItems: ['Green Eggs', 'Ham'],
+                selectedItems: ['Ham'],
+                id: '1'
+            },
+
+            model: {
+                urlRoot: function () {
+                    return '/'
                 },
+                storage: 'http',
+                name: 'list'
+            },
 
-                model: {
-                    storage: 'localStorage',
-                    name: 'list'
-                },
-
-                addItem: function () {
-                    if ((this.itemToAdd() != '') && (this.allItems.indexOf(this.itemToAdd()) < 0)) {
-                        this.allItems.push(this.itemToAdd());
-                    }
-                    this.itemToAdd('');
-                },
-
-                removeSelected: function () {
-                    this.allItems.removeAll(this.selectedItems());
-                    this.selectedItems([]);
-                },
-
-                sortItems: function () {
-                    this.allItems.sort();
+            addItem: function () {
+                if ((this.itemToAdd() != '') && (this.allItems.indexOf(this.itemToAdd()) < 0)) {
+                    this.allItems.push(this.itemToAdd());
                 }
+                this.itemToAdd('');
+            },
 
-            });
+            removeSelected: function () {
+                this.allItems.removeAll(this.selectedItems());
+                this.selectedItems([]);
+            },
 
-            new ListViewModel();
+            sortItems: function () {
+                this.allItems.sort();
+            }
+
         });
+
+        new ListViewModel();
+
+    });
+
     </script>
 
 </body>

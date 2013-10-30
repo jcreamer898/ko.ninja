@@ -7,6 +7,17 @@ The idea behind **ko.ninja** is that knockout has amazing two way binding functi
 
 ko.ninja provides methods to create view models in a clean and reusable fashion that provide some built in helpers.
 
+# Installation
+ko.ninja is available as an AMD module, so just require it and you are good to go. Something like this will do just fine:
+
+```js
+define(['ko.ninja'], function (ko) {
+  ko.ViewModel.extend({
+    ...
+  });
+});
+```
+
 ### ko.ViewModel
 The `ko.ViewModel` is a constructor to define ViewModels.
 
@@ -180,10 +191,6 @@ me.on("change:firstName", function(value) {
 
 me.firstName("foo");
 ```
-
-# Installation
-Just add Underscore.js and ko.ninja.js to your page beneath knockout.js and you're good to go!
-ko.ninja is also node and AMD compliant as well.
 
 # Development
 ko.ninja is built using grunt and bower. To run the build...
