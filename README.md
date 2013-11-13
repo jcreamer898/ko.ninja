@@ -1,4 +1,6 @@
-ko.ninja
+![](https://raw.github.com/jcreamer898/ko.ninja/master/ko-ninja.gif)
+
+#ko.ninja
 ========
 
 A framework for building awesome knockout.js apps.
