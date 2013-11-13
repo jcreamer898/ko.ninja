@@ -27,9 +27,20 @@
 
     </div>
 
-    <script data-main="../../ko.ninja.js" src="http://requirejs.org/docs/release/2.1.9/minified/require.js"></script>
-    <script src="../../requireConfig.js"></script>
+    <script src="http://requirejs.org/docs/release/2.1.9/minified/require.js"></script>
     <script>
+        require.config({
+            paths: {
+                'ko.ninja': 'dist/ko.ninja.min',
+                'underscore': '../bower_components/underscore/underscore',
+                'knockout': '../bower_components/knockout.js/knockout'
+            },
+            shim: {
+                'underscore': {
+                    exports: '_'
+                }
+            }
+        });
         require(['ko.ninja'], function (ko) {
             var ListViewModel = ko.ViewModel.extend({
 

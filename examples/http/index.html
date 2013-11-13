@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>ko.ninja - localStorage</title>
+    <title>ko.ninja - http</title>
     <link rel="stylesheet" type="text/css" href="http://knockoutjs.com/css/styles.css" />
 </head>
 <body id="wrapper">
@@ -27,46 +27,52 @@
 
     </div>
 
+    <script src="http://codeorigin.jquery.com/jquery-2.0.3.min.js"></script>
     <script data-main="../../ko.ninja.js" src="http://requirejs.org/docs/release/2.1.9/minified/require.js"></script>
     <script src="../../requireConfig.js"></script>
     <script>
         require(['ko.ninja'], function (ko) {
             var ListViewModel = ko.ViewModel.extend({
 
-                el: '#list',
+            el: '#list',
 
-                observables: {
-                    itemToAdd: '',
-                    allItems: ['Green Eggs', 'Ham'],
-                    selectedItems: ['Ham'],
-                    id: '1'
+            observables: {
+                itemToAdd: '',
+                allItems: [],
+                selectedItems: [],
+                id: '1'
+            },
+
+            model: {
+                urlRoot: function () {
+                    return '/list/'
                 },
+                storage: 'http',
+                name: 'list'
+            },
 
-                model: {
-                    storage: 'localStorage',
-                    name: 'list'
-                },
-
-                addItem: function () {
-                    if ((this.itemToAdd() != '') && (this.allItems.indexOf(this.itemToAdd()) < 0)) {
-                        this.allItems.push(this.itemToAdd());
-                    }
-                    this.itemToAdd('');
-                },
-
-                removeSelected: function () {
-                    this.allItems.removeAll(this.selectedItems());
-                    this.selectedItems([]);
-                },
-
-                sortItems: function () {
-                    this.allItems.sort();
+            addItem: function () {
+                if ((this.itemToAdd() != '') && (this.allItems.indexOf(this.itemToAdd()) < 0)) {
+                    this.allItems.push(this.itemToAdd());
                 }
+                this.itemToAdd('');
+            },
 
-            });
+            removeSelected: function () {
+                this.allItems.removeAll(this.selectedItems());
+                this.selectedItems([]);
+            },
 
-            new ListViewModel();
+            sortItems: function () {
+                this.allItems.sort();
+            }
+
         });
+
+        new ListViewModel();
+
+    });
+
     </script>
 
 </body>
