@@ -242,8 +242,8 @@ grunt server # localhost:8003
 ```
 
 # Future Features
-* ~base `ko.Model` for saving and retrieving data~
-* ~ko.Model for REST http syncing~
+* ~~base `ko.Model` for saving and retrieving data~~
+* ~~ko.Model for REST http syncing~~
 * ko.Model for websockets syncing
 * Built in mocking for models
 * ViewModel validation with a `validation` property on ViewModels.
