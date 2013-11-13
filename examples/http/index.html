@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>ko.ninja - localStorage</title>
+    <title>ko.ninja - http</title>
     <link rel="stylesheet" type="text/css" href="http://knockoutjs.com/css/styles.css" />
 </head>
 <body id="wrapper">
@@ -27,6 +27,7 @@
 
     </div>
 
+    <script src="http://codeorigin.jquery.com/jquery-2.0.3.min.js"></script>
     <script data-main="../../ko.ninja.js" src="http://requirejs.org/docs/release/2.1.9/minified/require.js"></script>
     <script src="../../requireConfig.js"></script>
     <script>
@@ -37,14 +38,14 @@
 
             observables: {
                 itemToAdd: '',
-                allItems: ['Green Eggs', 'Ham'],
-                selectedItems: ['Ham'],
+                allItems: [],
+                selectedItems: [],
                 id: '1'
             },
 
             model: {
                 urlRoot: function () {
-                    return '/'
+                    return '/list/'
                 },
                 storage: 'http',
                 name: 'list'

@@ -16,7 +16,9 @@
     "url": "https://github.com/jcreamer898/ko.ninja/issues"
   },
   "devDependencies": {
+    "underscore": "latest",
     "grunt": "~0.4.1",
+    "grunt-express": "latest",
     "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-uglify": "~0.2.2",
     "grunt-contrib-qunit": "~0.2.2",

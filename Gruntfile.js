@@ -1,4 +1,7 @@
 /*global module:false*/
+
+var path = require('path');
+
 module.exports = function(grunt) {
 
     // Project configuration.
@@ -89,46 +92,21 @@ module.exports = function(grunt) {
                 tasks: ['jshint:lib_test', 'qunit']
             }
         },
+        express: {
+            server: {
+                options: {
+                    hostname: 'localhost',
+                    port: 8003,
+                    server: path.resolve('./server'),
+                    debug: false
+                }
+            }
+        },
         connect: {
-            example: {
-                options: {
-                    port: 8000,
-                    base: 'example'
-                }
-            },
-            qunit: {
-                options: {
-                    port: 8001,
-                    base: 'test',
-                    middleware: function(connect, options) {
-                        return [
-                            connect.static('bower_components'),
-                            connect.static('dist'),
-                            connect.static(options.base),
-                            connect.directory(options.base)
-                        ];
-                    }
-                }
-            },
             test: {
                 options: {
                     port: 8002,
                     base: 'test',
-                    keepalive: true,
-                    middleware: function(connect, options) {
-                        return [
-                            connect.static('bower_components'),
-                            connect.static('lib'),
-                            connect.static(options.base),
-                            connect.directory(options.base)
-                        ];
-                    }
-                }
-            },
-            server: {
-                options: {
-                    port: 8003,
-                    base: 'examples',
                     keepalive: true,
                     middleware: function(connect, options) {
                         return [
@@ -144,6 +122,7 @@ module.exports = function(grunt) {
     });
 
     // These plugins provide necessary tasks.
+    grunt.loadNpmTasks('grunt-express');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-jshint');
@@ -154,5 +133,6 @@ module.exports = function(grunt) {
     // Default task.
     grunt.registerTask('default', ['jshint', 'requirejs']);
     grunt.registerTask('test', ['connect:qunit', 'qunit']);
+    grunt.registerTask('server', ['express', 'watch']);
 
 };

@@ -17,7 +17,7 @@ define([
         this.model.insert({
             firstName: 'Jonathan',
             lastName: 'Creamer'
-        }).done(function (data) {
+        }, function (data) {
             var record = JSON.parse(localStorage['friends-' + data.id]);
             ok(data.id, 'it should create an id');
             equal(record.firstName, 'Jonathan', 'it should set the firstName');
@@ -32,7 +32,7 @@ define([
             id: 1,
             firstName: 'Tyson',
             lastName: 'Cadenhead'
-        }).done(function () {
+        }, function () {
             var record = JSON.parse(localStorage['friends-1']);
             equal(record.firstName, 'Tyson', 'it should change the firstName');
             start();
@@ -40,15 +40,16 @@ define([
     });
 
     asyncTest('when using the save shortcut', function () {
+        var self = this;
         this.model.save({
             firstName: 'Jonathan'
-        }).done(function (data) {
+        }, function (data) {
             var record = JSON.parse(localStorage['friends-' + data.id]);
             equal(record.firstName, 'Jonathan', 'it should save the friend');
-            this.save({
+            self.model.save({
                 id: data.id,
                 firstName: 'Tyson'
-            }).done(function (updatedData) {
+            }, function (updatedData) {
                 var record = JSON.parse(localStorage['friends-' + data.id]);
                 equal(record.firstName, 'Tyson', 'it should update the friend');
                 equal(updatedData.id, data.id, 'it should have the same id');
@@ -59,7 +60,7 @@ define([
 
     asyncTest('when removing data', function () {
         localStorage['friends-1'] = JSON.stringify({ id: 1, firstName: 'Jonathan', lastName: 'Creamer' });
-        this.model.remove('1').done(function () {
+        this.model.remove('1', function () {
             ok(!localStorage['friends-1'], 'it should remove the record');
             start();
         });
@@ -67,7 +68,7 @@ define([
 
     asyncTest('when finding a single record', function () {
         localStorage['friends-1'] = JSON.stringify({ id: 1, firstName: 'Jonathan', lastName: 'Creamer' });
-        this.model.findOne('1').done(function (data) {
+        this.model.findOne('1', function (data) {
             equal(data.firstName, 'Jonathan', 'it should find the record');
             start();
         });
@@ -80,7 +81,7 @@ define([
 
         this.model.find({
             lastName: 'Cadenhead'
-        }).done(function (data) {
+        }, function (data) {
             equal(data.length, 2, 'it should get both records with the lastName of Cadenhead');
             equal(data[0].lastName, 'Cadenhead', 'it should have Cadenhead as the lastName of the first record');
             equal(data[0].lastName, 'Cadenhead', 'it should have Cadenhead as the lastName of the second record');

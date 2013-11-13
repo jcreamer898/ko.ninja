@@ -51,7 +51,7 @@ Some of the advantages are, you don't have to type `ko.observable()` all the tim
 
 ### ko.Model
 
-The ko.Model syncs data from the ko.ViewModel with a backend service or with localStorage. It can be added to the ko.ViewModel like this:
+The ko.Model syncs data from the ko.ViewModel with a back-end service or with localStorage. It can be added to the ko.ViewModel like this:
 
 ```js
 ko.ViewModel.extend({
@@ -78,6 +78,34 @@ ko.ViewModel.extend({
 
 You can also access the model anywhere in your viewModel using `this.model`. Now, let's take a look at the ko.Model api. It is designed to use the same basic API regardless of your storage type.
 
+#### storage {String}
+The type of storage to use on the viewModel. Currently, `localStorage` and `http` are both supported. HTTP expects a REST API and can be defined like this:
+
+```js
+ko.ViewModel.extend({
+  model: {
+
+      // The root that all ajax calls are made relative to
+      urlRoot: function () {
+          return '/list/'
+      },
+
+      // If you have a suffix appended to each URL, this can 
+      // be used. It defaults to an empty string.
+      suffix: '.json',
+
+      // For HTTP, this should always be http
+      storage: 'http',
+
+      // The name of your model. If the urlRoot is not specified,
+      // this will be used to build the urlRoot as well.
+      name: 'list'
+
+  },
+  ...
+});
+```
+
 #### idAttribute {Property}
 The id attribute on the viewModel. This is used for syncing with databases. Defaults to `id`.
 
@@ -102,7 +130,7 @@ Inserts new data into the database.
 ```js
 var model = new ko.Model({ name: 'friends' });
 
-model.insert({ firstName: 'Milo', lastName: 'Cadenhead' }).done(function (data) {
+model.insert({ firstName: 'Milo', lastName: 'Cadenhead' }, function (data) {
    console.log(data);
    // { firstName: 'Milo', lastName: 'Cadenhead', id: 1382539084406 }
 });
@@ -114,8 +142,8 @@ Updates the data in the database.
 ```js
 var model = new ko.Model({ name: 'friends' });
 
-model.update(1382539084406, { firstName: 'Linus' }).done(function () {
-   model.findOne(1382539084406).done(function (data) {
+model.update(1382539084406, { firstName: 'Linus' }, function () {
+   model.findOne(1382539084406, function (data) {
       console.log(data);
       // { firstName: 'Linus', lastName: 'Cadenhead', id: 1382539084406 }
    });
@@ -128,7 +156,7 @@ Instead of using update and insert, you can use save. If there is an id attribut
 ```js
 var model = new ko.Model({ name: 'friends' });
 
-model.save({ firstName: 'Jonathan', lastName: 'Creamer', id: 1 }).done(function () {
+model.save({ firstName: 'Jonathan', lastName: 'Creamer', id: 1 }, function () {
    console.log('Saved him!');
 });
 ```
@@ -139,7 +167,7 @@ Removes a record from the database.
 ```js
 var model = new ko.Model({ name: 'friends' });
 
-model.remove(1382539084406).done(function () {
+model.remove(1382539084406, function () {
    console.log('1382539084406 was removed');
 });
 ```
@@ -150,8 +178,8 @@ Returns a single viewModel with the matching id.
 ```js
 var model = new ko.Model({ name: 'friends' });
 
-model.save({ firstName: 'Jonathan', lastName: 'Creamer', id: 1 }).done(function () {
-   models.findOne(1).done(function (data) {
+model.save({ firstName: 'Jonathan', lastName: 'Creamer', id: 1 }, function () {
+   models.findOne(1, function (data) {
       console.log(data);
       // { firstName: 'Jonathan', lastName: 'Creamer', id: 1 }
    });
@@ -170,7 +198,7 @@ model.save({ firstName: 'Linus', lastName: 'Cadenhead', id: 3 });
 
 model.find({
    lastName: 'Cadenhead'   
-}).done(function (data) {
+}, function (data) {
    console.log(data); 
    // [{ firstName: 'Tyson', lastName: 'Cadenhead', id: 2 }, { firstName: 'Linus', lastName: 'Cadenhead', id: 3 }]
 });
@@ -204,18 +232,18 @@ To run the tests...
 ```bash
 grunt test
 # or
-grunt connect:test # to run the tests in your browser at localhost:8002
+grunt server # to run the tests in your browser at localhost:8003/qunit.html
 ```
 
 There is also a built in server to run the provided examples...
 
 ```bash
-grunt connect:server # localhost:8000
+grunt server # localhost:8003
 ```
 
 # Future Features
 * ~base `ko.Model` for saving and retrieving data~
-* ko.Model for REST http syncing
+* ~ko.Model for REST http syncing~
 * ko.Model for websockets syncing
 * Built in mocking for models
 * ViewModel validation with a `validation` property on ViewModels.

@@ -84,7 +84,7 @@ define([
         this.person.lastName('Cadenhead');
 
         setTimeout(function () {
-            self.person.model.findOne(1).done(function (data) {
+            self.person.model.findOne(1, function (data) {
                 equal(data.firstName, 'Tyson', 'it should set the first name to Tyson and save it automatically');
                 equal(data.lastName, 'Cadenhead', 'it should set the last name to Cadenhead and save it automatically');
                 start();
