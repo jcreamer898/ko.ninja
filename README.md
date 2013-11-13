@@ -8,6 +8,12 @@ The idea behind **ko.ninja** is that knockout has amazing two way binding functi
 ko.ninja provides methods to create view models in a clean and reusable fashion that provide some built in helpers.
 
 # Installation
+ko.ninja can be used by downloading the `dist/ko.ninja.min.js` file or using bower:
+
+```bash
+bower install ko.ninja
+```
+
 ko.ninja is available as an AMD module, so just require it and you are good to go. Something like this will do just fine:
 
 ```js
