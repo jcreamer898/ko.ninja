@@ -23,6 +23,13 @@ module.exports = function (app, io) {
     // Friends
     io.sockets.on('connection', function (socket) {
 
+        socket.on('friends-custom-find', function (data, done) {
+            done({
+                friends: friends,
+                custom: true
+            });
+        });
+
         socket.on('friends-find', function (data, done) {
             done(friends);
         });

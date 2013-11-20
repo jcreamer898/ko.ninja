@@ -56,4 +56,18 @@ define([
         });
     });
 
+    asyncTest('when the the user attempts to create a custom find message name', function () {
+        new Model({
+            name: 'friends',
+            storage: 'socket.io',
+            port: 8003,
+            messageNames: {
+                'find': 'friends-custom-find'
+            }
+        }).find(function (data) {
+            ok(data.custom, 'it should use the custom message name');
+            start();
+        });
+    });
+
 });
