@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>ko.ninja - localStorage</title>
+    <title>ko.ninja - socket.io</title>
     <link rel="stylesheet" type="text/css" href="http://knockoutjs.com/css/styles.css" />
     <link rel="stylesheet" type="text/css" href="/css/styles.css" />
 </head>
@@ -16,10 +16,9 @@
     <img src="https://raw.github.com/jcreamer898/ko.ninja/master/ko-ninja.gif" alt="" style="max-width:100%;">
 
     <br /><br />
+    <h3>Socket.io Example</h3>
 
-    <h3>Local Storage Example</h3>
-
-    <p>This list is populated and updated using HTML5 local storage.<br />To see how it works, take a look at the source code, or check out out the <a href="https://github.com/jcreamer898/ko.ninja">documentation</a>.</p>
+    <p>This list is populated and updated with Socket.io.<br />To see how it works, take a look at the source code, or check out out the <a href="https://github.com/jcreamer898/ko.ninja">documentation</a>.</p>
 
     <div class="liveExample">
 
@@ -40,46 +39,51 @@
 
     </div>
 
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://codeorigin.jquery.com/jquery-2.0.3.min.js"></script>
     <script data-main="../../ko.ninja.js" src="http://requirejs.org/docs/release/2.1.9/minified/require.js"></script>
     <script src="../../requireConfig.js"></script>
     <script>
         require(['ko.ninja'], function (ko) {
             var ListViewModel = ko.ViewModel.extend({
 
-                el: '#list',
+            el: '#list',
 
-                observables: {
-                    itemToAdd: '',
-                    allItems: ['Green Eggs', 'Ham'],
-                    selectedItems: ['Ham'],
-                    id: '1'
-                },
+            observables: {
+                itemToAdd: '',
+                allItems: [],
+                selectedItems: [],
+                id: '1'
+            },
 
-                model: {
-                    storage: 'localStorage',
-                    name: 'list'
-                },
+            model: {
+                storage: 'socket.io',
+                port: 8003,
+                name: 'list'
+            },
 
-                addItem: function () {
-                    if ((this.itemToAdd() != '') && (this.allItems.indexOf(this.itemToAdd()) < 0)) {
-                        this.allItems.push(this.itemToAdd());
-                    }
-                    this.itemToAdd('');
-                },
-
-                removeSelected: function () {
-                    this.allItems.removeAll(this.selectedItems());
-                    this.selectedItems([]);
-                },
-
-                sortItems: function () {
-                    this.allItems.sort();
+            addItem: function () {
+                if ((this.itemToAdd() != '') && (this.allItems.indexOf(this.itemToAdd()) < 0)) {
+                    this.allItems.push(this.itemToAdd());
                 }
+                this.itemToAdd('');
+            },
 
-            });
+            removeSelected: function () {
+                this.allItems.removeAll(this.selectedItems());
+                this.selectedItems([]);
+            },
 
-            new ListViewModel();
+            sortItems: function () {
+                this.allItems.sort();
+            }
+
         });
+
+        new ListViewModel();
+
+    });
+
     </script>
 
 </body>

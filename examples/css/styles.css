@@ -1,0 +1,6 @@
+html, #wrapper {
+    background: #FFF !important;
+}
+a, a:visited {
+    color: darkred;
+}
