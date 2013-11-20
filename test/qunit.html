@@ -13,13 +13,14 @@
 		QUnit.config.autostart = false;
 	</script>
 	
-
+    <script src="/socket.io/socket.io.js"></script>
 	<script data-main="../../ko.ninja.js" src="http://requirejs.org/docs/release/2.1.9/minified/require.js"></script>
     <script src="../../requireConfig.js"></script>
     <script>
     	require([
     		'model.spec.js',
             'httpModel.spec.js',
+            'socketModel.spec.js',
     		'viewModel.spec.js'
 		], function () {
 			QUnit.start();
