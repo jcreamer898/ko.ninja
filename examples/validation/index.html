@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>ko.ninja - validation</title>
+    <link rel="stylesheet" type="text/css" href="http://knockoutjs.com/css/styles.css" />
+    <link rel="stylesheet" type="text/css" href="/css/styles.css" />
+</head>
+<body id="wrapper">
+
+    <br /><br />
+
+    <a href="/">&lt; back</a>
+
+    <br /><br />
+
+    <img src="https://raw.github.com/jcreamer898/ko.ninja/master/ko-ninja.gif" alt="" style="max-width:100%;">
+
+    <br /><br />
+    <h3>Validation Example</h3>
+
+    <div class="liveExample">
+        <div id="form">
+            <p><label>First name:</label><input data-bind="value: firstName, valueUpdate:'afterkeydown'" /></p>
+            <div class="error-message" data-bind="html: firstName.error"></div>
+            <p><label>Last name:</label><input data-bind="value: lastName, valueUpdate:'afterkeydown'" /></p>
+            <div class="error-message" data-bind="html: lastName.error"></div>
+            <p><label>Email:</label><input data-bind="value: email, valueUpdate:'afterkeydown'" /></p>
+            <div class="error-message" data-bind="html: email.error"></div>
+            <p><label>Phone:</label><input data-bind="value: phone, valueUpdate:'afterkeydown'" /></p>
+            <div class="error-message" data-bind="html: phone.error"></div>
+            <input style="margin-left: 100px" type="button" data-bind="click: submitPerson" value="Save" />
+        </div>
+    </div>
+
+    <script src="http://codeorigin.jquery.com/jquery-2.0.3.min.js"></script>
+    <script data-main="../../ko.ninja.js" src="http://requirejs.org/docs/release/2.1.9/minified/require.js"></script>
+    <script src="../../ko.ninja.requireConfig.js"></script>
+    <script>
+        require(['ko.ninja'], function (ko) {
+            var ValidationViewModel = ko.ViewModel.extend({
+
+            el: '#form',
+
+            observables: {
+                firstName: '',
+                lastName: '',
+                email: '',
+                phone: ''
+            },
+
+            validation: {
+                firstName: {
+                    required: 'Your first name is required'
+                },
+                email: {
+                    required: 'Your email address is required',
+                    email: 'Please enter a valid email address'
+                },
+                phone: {
+                    number: 'Please enter a valid number',
+                    length: {
+                        message: 'Please make sure your phone number has 9 digits',
+                        value: 9
+                    }
+                }
+            },
+
+            submitPerson: function () {
+                var errors = this.validate();
+                if (!errors) {
+                    alert('Your form has been submitted. Just kidding!')
+                }
+            },
+
+            initialize: function () {
+            }
+
+        });
+
+        window.val = new ValidationViewModel();
+
+    });
+
+    </script>
+
+</body>
+</html>
