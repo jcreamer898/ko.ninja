@@ -1,6 +1,6 @@
 define([
     'knockout',
-    'viewModel'
+    'ko.ninja.viewModel'
 ], function (ko, ViewModel) {
 
 

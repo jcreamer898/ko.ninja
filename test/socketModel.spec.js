@@ -1,5 +1,5 @@
 define([
-    'socketModel'
+    'ko.ninja.socketModel'
 ], function (Model) {
 
     module('ko.SocketModel', {

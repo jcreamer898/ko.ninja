@@ -1,5 +1,5 @@
 define([
-    'model'
+    'ko.ninja.model'
 ], function (Model) {
 
     module('ko.Model', {

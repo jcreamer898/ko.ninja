@@ -1,5 +1,5 @@
 define([
-    'httpModel'
+    'ko.ninja.httpModel'
 ], function (Model) {
 
     module('ko.HttpModel', {
