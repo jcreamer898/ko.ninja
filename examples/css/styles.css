@@ -14,3 +14,11 @@ a, a:visited {
     font-size: 10px;
     color: darkred;
 }
+.error input {
+    border: solid 1px darkred;
+}
+.form-errors {
+    padding: 15px;
+    color: white;
+    background: darkred;    
+}

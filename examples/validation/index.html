@@ -20,14 +20,53 @@
 
     <div class="liveExample">
         <div id="form">
-            <p><label>First name:</label><input data-bind="value: firstName, valueUpdate:'afterkeydown'" /></p>
+
+            <div style="display: none" class="form-errors" data-bind="visible: errors().length">
+                <p>There are errors. Please fix them!</p>
+                <p>Here are the fields that have errors:</p>
+                <ul data-bind="foreach: errors">
+                    <li>
+                        <span data-bind="text: observable"></span> - 
+                        <span data-bind="text: error"></span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Required -->
+            <p data-bind="css: { error: firstName.error }">
+                <label>First name:</label>
+                <input data-bind="value: firstName, valueUpdate:'afterkeydown'" />
+            </p>
             <div class="error-message" data-bind="html: firstName.error"></div>
-            <p><label>Last name:</label><input data-bind="value: lastName, valueUpdate:'afterkeydown'" /></p>
+
+            <!-- No Validation -->
+            <p data-bind="css: { error: lastName.error }">
+                <label>Last name:</label>
+                <input data-bind="value: lastName, valueUpdate:'afterkeydown'" />
+            </p>
             <div class="error-message" data-bind="html: lastName.error"></div>
-            <p><label>Email:</label><input data-bind="value: email, valueUpdate:'afterkeydown'" /></p>
+            
+            <!-- Email -->
+            <p data-bind="css: { error: email.error }">
+                <label>Email:</label>
+                <input data-bind="value: email, valueUpdate:'afterkeydown'" />
+            </p>
             <div class="error-message" data-bind="html: email.error"></div>
-            <p><label>Phone:</label><input data-bind="value: phone, valueUpdate:'afterkeydown'" /></p>
+
+            <!-- Phone -->
+            <p data-bind="css: { error: phone.error }">
+                <label>Phone:</label>
+                <input data-bind="value: phone, valueUpdate:'afterkeydown'" />
+            </p>
             <div class="error-message" data-bind="html: phone.error"></div>
+
+            <!-- Custom Validation -->
+            <p data-bind="css: { error: answer.error }">
+                <label>Type "44"</label>
+                <input data-bind="value: answer, valueUpdate:'afterkeydown'" />
+            </p>
+            <div class="error-message" data-bind="html: answer.error"></div>
+
             <input style="margin-left: 100px" type="button" data-bind="click: submitPerson" value="Save" />
         </div>
     </div>
@@ -45,12 +84,17 @@
                 firstName: '',
                 lastName: '',
                 email: '',
-                phone: ''
+                phone: '',
+                answer: ''
             },
 
             validation: {
                 firstName: {
-                    required: 'Your first name is required'
+                    required: 'Your first name is required',
+                    minLength: {
+                        message: 'Please make sure your name is at least 3 characters long.',
+                        value: 3
+                    }
                 },
                 email: {
                     required: 'Your email address is required',
@@ -62,6 +106,18 @@
                         message: 'Please make sure your phone number has 9 digits',
                         value: 9
                     }
+                },
+                answer: {
+                    maxLength: {
+                        message: 'You have entered more than 2 characters... there is no way you are typing "44"!',
+                        value: 2
+                    },
+                    custom: {
+                        message: 'Please enter "44"',
+                        validator: function (value) {
+                            return value !== '44';
+                        }
+                    }
                 }
             },
 
@@ -70,9 +126,6 @@
                 if (!errors) {
                     alert('Your form has been submitted. Just kidding!')
                 }
-            },
-
-            initialize: function () {
             }
 
         });

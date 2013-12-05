@@ -48,28 +48,28 @@ define([
         ok(!this.viewModel.validationTypes._number('12.2'), 'it should allow decimals');
     });
 
-    test('when validating min length', function () {
-        ok(!this.viewModel.validationTypes._min('test', {
+    test('when validating max length', function () {
+        ok(!this.viewModel.validationTypes._maxLength('test', {
             value: 4
         }), 'it should be null because it is the correct length');
-        ok(!this.viewModel.validationTypes._min('test', {
+        ok(!this.viewModel.validationTypes._maxLength('test', {
             value: 5
-        }), 'it should be null because it is higher than the min');
-        ok(this.viewModel.validationTypes._min('test', {
+        }), 'it should be null because it is higher than the max');
+        ok(this.viewModel.validationTypes._maxLength('test', {
             value: 3
-        }), 'it should return an error because it is less than the min');
+        }), 'it should return an error because it is less than the max');
     });
 
-    test('when validating max length', function () {
-        ok(!this.viewModel.validationTypes._max('test', {
+    test('when validating min length', function () {
+        ok(!this.viewModel.validationTypes._minLength('test', {
             value: 4
         }), 'it should be null because it is the correct length');
-        ok(!this.viewModel.validationTypes._max('test', {
+        ok(!this.viewModel.validationTypes._minLength('test', {
             value: 3
-        }), 'it should be null because it is lower than the max');
-        ok(this.viewModel.validationTypes._max('test', {
+        }), 'it should be null because it is lower than the min');
+        ok(this.viewModel.validationTypes._minLength('test', {
             value: 5
-        }), 'it should return an error because it is more than the max');
+        }), 'it should return an error because it is more than the min');
     });
 
     test('when validating a length', function () {
