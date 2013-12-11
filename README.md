@@ -115,6 +115,8 @@ var Person = ko.ViewModel.extend({
 });
 ```
 
+[Here is a JSFiddle](http://jsfiddle.net/tysoncadenhead/QUPg8/) showing the code above in action.
+
 As your observables are updated, there will also be an observable called [observableName].error that will be populated with errors on the observable.
 
 For example, if you want to watch for errors on the first name, your template would look like this:
@@ -282,6 +284,8 @@ ko.ViewModel.extend({
 ```
 
 You can also access the model anywhere in your viewModel using `this.model`. Now, let's take a look at the ko.Model api. It is designed to use the same basic API regardless of your storage type.
+
+If you would like to see the localStorage in action, [check out this JSFiddle](http://jsfiddle.net/tysoncadenhead/8jdmJ/1/). The same example is also available in the `/examples` folder on this project.
 
 #### storage {String}
 The type of storage to use on the viewModel. Currently, `localStorage` and `http` are both supported. 
