@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>ko.ninja - localStorage</title>
+    <link rel="stylesheet" type="text/css" href="http://knockoutjs.com/css/styles.css" />
+    <link rel="stylesheet" type="text/css" href="/css/styles.css" />
+</head>
+<body id="wrapper">
+
+    <br /><br />
+
+    <a href="/">&lt; back</a>
+
+    <br /><br />
+
+    <img src="https://raw.github.com/jcreamer898/ko.ninja/master/ko-ninja.gif" alt="" style="max-width:100%;">
+
+    <br /><br />
+
+    <h3>Local Storage Example</h3>
+
+    <p>This form is populated and updated using HTML5 local storage.<br />To see how it works, take a look at the source code, or check out out the <a href="https://github.com/jcreamer898/ko.ninja">documentation</a>.</p>
+
+    <div class="liveExample">
+
+        <div class="liveExample">
+            <div id="form">
+
+                <div style="display: none" class="form-errors" data-bind="visible: errors().length">
+                    <p>There are errors. Please fix them!</p>
+                    <p>Here are the fields that have errors:</p>
+                    <ul data-bind="foreach: errors">
+                        <li>
+                            <span data-bind="text: observable"></span> - 
+                            <span data-bind="text: error"></span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Required -->
+                <p data-bind="css: { error: firstName.error }">
+                    <label>First name:</label>
+                    <input data-bind="value: firstName, valueUpdate:'afterkeydown'" />
+                </p>
+                <div class="error-message" data-bind="html: firstName.error"></div>
+                
+                <!-- Required -->
+                <p data-bind="css: { error: lastName.error }">
+                    <label>Last name:</label>
+                    <input data-bind="value: lastName, valueUpdate:'afterkeydown'" />
+                </p>
+                <div class="error-message" data-bind="html: lastName.error"></div>
+                
+                <div style="margin-left: 100px">Hi <span data-bind="text: fullName" style="font-weight: bold;"></span>, change the form values and refresh the page to see them persist.</div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script data-main="../../ko.ninja.js" src="http://requirejs.org/docs/release/2.1.9/minified/require.js"></script>
+    <script src="../../ko.ninja.requireConfig.js"></script>
+    <script>
+        require(['ko.ninja'], function (ko) {
+
+            var Person = ko.ViewModel.extend({
+
+                el: '#form',
+
+                observables: {
+                    id: null,
+                    firstName: '',
+                    lastName: '',
+                    fullName: function () {
+                        return this.firstName() + ' ' + this.lastName()
+                    }
+                },
+            
+                model: {
+                    name: 'person',
+                    storage: 'localStorage'
+                },
+
+                validation: {
+                    firstName: {
+                        required: 'Your first name is required'
+                    },
+                    lastName: {
+                        required: 'Your last name is required'
+                    }
+                }
+
+            });
+
+            var person = new Person({
+                id: 1
+            });
+        
+        });
+    </script>
+
+</body>
+</html>
