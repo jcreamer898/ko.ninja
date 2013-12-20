@@ -1,6 +1,6 @@
 {
   "name": "ko.ninja",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "dist/ko.ninja.js",
   "ignore": [
     "**/.*",
@@ -12,6 +12,6 @@
   "dependencies": {
     "knockout.js": "~2.3.0",
     "qunit": "~1.12.0",
-    "underscore": "~1.5.1"
+    "underscore": "1.5.2"
   }
 }
