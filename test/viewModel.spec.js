@@ -103,4 +103,37 @@ define([
         });
     });
 
+    asyncTest('when the model is set to autoSync and the data changes', function () {
+        this.person.model.save = function () {
+            ok(1, 'it should automatically save the data that changed');
+            start();
+        };
+        this.person.firstName('Linusaur');
+    });
+
+    asyncTest('when the model is set to autoSync false and the data changes', function () {
+        var Person = ViewModel.extend({
+            autoSync: false,
+            observables: {
+                firstName: 'Jonathan',
+                lastName: 'Creamer',
+                id: 1
+            },
+            model: {
+                name: 'person'
+            }
+        });
+
+        this.person = new Person();
+
+        this.person.model.save = function () {
+            ok(0, 'it should not automatically save the data that changed');
+        };
+        this.person.firstName('Linusaur');
+
+        ok(1, 'it should skip the saving and get to this');
+        start();
+
+    });
+
 });
