@@ -9,7 +9,7 @@ module.exports = function(grunt) {
         // Metadata.
         pkg: grunt.file.readJSON('package.json'),
         banner: '/*! <%= pkg.title || pkg.name %> - v<%= pkg.version %> - ' + '<%= grunt.template.today("yyyy-mm-dd") %>\n' + '<%= pkg.homepage ? "* " + pkg.homepage + "\\n" : "" %>' + '* Copyright (c) <%= grunt.template.today("yyyy") %> <%= pkg.author.name %>;' + ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
-        
+
         requirejs: {
             compile: {
                 options: {
@@ -19,6 +19,21 @@ module.exports = function(grunt) {
                     name: 'ko.ninja',
                     preserveLicenseComments: false,
                     optimize: 'uglify2',
+                    mainConfigFile: 'lib/build.js',
+                    exclude: [
+                        'underscore',
+                        'knockout'
+                    ]
+                }
+            },
+            pretty: {
+                options: {
+                    banner: '<%= banner %>',
+                    baseUrl: 'lib/',
+                    out: 'dist/<%= pkg.name %>.js',
+                    name: 'ko.ninja',
+                    preserveLicenseComments: false,
+                    optimize: 'none',
                     mainConfigFile: 'lib/build.js',
                     exclude: [
                         'underscore',
@@ -50,15 +65,15 @@ module.exports = function(grunt) {
                 boss: true,
                 eqnull: true,
                 expr: true,
-                browser: true,                
+                browser: true,
                 globals: {
                     jQuery: true,
                     module: true,
                     test: true,
-                    ok: true, 
+                    ok: true,
                     ko: true,
                     QUnit: true,
-                    define: true, 
+                    define: true,
                     require: true,
                     console: true,
                     equal: true,
