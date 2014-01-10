@@ -21,6 +21,7 @@ app.configure(function() {
     app.use(express['static']('lib'));
     app.use(express['static']('examples'));
     app.use(express['static']('test'));
+    app.use('/dist', express['static']('dist'));
     app.set('views', __dirname);
 });
 

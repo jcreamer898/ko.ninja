@@ -1,7 +1,23 @@
 
-define('ko.ninja.events',[
-    'underscore'
-], function (_) {
+/*global define */
+
+(function (root, factory) {
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.events',[
+            'underscore'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root._, root.ko);
+    }
+
+} (this, function (_, ko) {
+
+    
 
     // Regular expression used to split event strings.
     var eventSplitter = /\s+/,
@@ -64,7 +80,7 @@ define('ko.ninja.events',[
          */
         on: function(name, callback, context) {
             if (!eventsApi(this, 'on', name, [callback, context]) || !callback) return this;
-            this._events || (this._events = {});
+            this._events = this._events || (this._events = {});
             var events = this._events[name] || (this._events[name] = []);
             events.push({callback: callback, context: context, ctx: context || this});
             return this;
@@ -113,7 +129,7 @@ define('ko.ninja.events',[
             names = name ? [name] : _.keys(this._events);
             for (i = 0, l = names.length; i < l; i++) {
                 name = names[i];
-                if (events = this._events[name]) {
+                if (events === this._events[name]) {
                     this._events[name] = retain = [];
                     if (callback || context) {
                         for (j = 0, k = events.length; j < k; j++) {
@@ -193,13 +209,34 @@ define('ko.ninja.events',[
         };
     });
 
-    return Events;
-});
-define('ko.ninja.extend',[
-    'underscore'
-], function (_) {
+    if (typeof define === 'function' && define.amd) {
+        return Events;
+    } else {
+        ko.ninjaEvents = Events;
+    }
 
-    return function(protoProps, staticProps) {
+}));
+/*global define */
+
+(function (root, factory) {
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.extend',[
+            'underscore'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root._, root.ko);
+    }
+
+} (this, function (_, ko) {
+
+    
+
+    var Extend = function(protoProps, staticProps) {
         var parent = this,
             Surrogate,
             child;
@@ -236,17 +273,39 @@ define('ko.ninja.extend',[
             child.prototype.toString = function() {
                 return protoProps.name;
             };
-        }        
+        }
 
         return child;
     };
 
-});
-define('ko.ninja.baseModel',[
-    'underscore',
-    'ko.ninja.events',
-    'ko.ninja.extend'
-], function (_, Events, extend) {
+    if (typeof define === 'function' && define.amd) {
+        return Extend;
+    } else {
+        ko.ninjaExtend = Extend;
+    }
+
+}));
+/*global define */
+
+(function (root, factory) {
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.baseModel',[
+            'underscore',
+            'ko.ninja.events',
+            'ko.ninja.extend'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root._, root.ko.ninjaEvents, root.ko.ninjaExtend, root.ko);
+    }
+
+} (this, function (_, Events, extend, ko) {
+
+    
 
     //### ko.BaseModel
     var BaseModel = function (options) {
@@ -292,14 +351,34 @@ define('ko.ninja.baseModel',[
 
     BaseModel.extend = extend;
 
-    return BaseModel;
+    if (typeof define === 'function' && define.amd) {
+        return BaseModel;
+    } else {
+        ko.ninjaBaseModel = BaseModel;
+    }
 
-});
-define('ko.ninja.localStorageModel',[
-    'ko.ninja.baseModel'
-], function (BaseModel) {
+}));
+/*global define */
 
-    return BaseModel.extend({
+(function (root, factory) {
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.localStorageModel',[
+            'ko.ninja.baseModel'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root.ko.ninjaBaseModel, root.ko);
+    }
+
+} (this, function (BaseModel, ko) {
+
+    
+
+    var LocalStorageModel = BaseModel.extend({
 
         find: function (data, done) {
             var response = [], match;
@@ -370,11 +449,32 @@ define('ko.ninja.localStorageModel',[
 
     });
 
-});
-/*global ActiveXObject */
+    if (typeof define === 'function' && define.amd) {
+        return LocalStorageModel;
+    } else {
+        ko.ninjaLocalStorageModel = LocalStorageModel;
+    }
 
-define('ko.ninja.ajax',[],function () {
-    return function (url, callbackFunction) {
+}));
+/*global ActiveXObject, define */
+
+(function (root, factory) {
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.ajax',[], factory);
+
+    // Non-AMD
+    } else {
+        factory(root.ko);
+    }
+
+} (this, function (ko) {
+
+    
+
+    var Ajax = function (url, callbackFunction) {
       var self = this,
         uri;
       this.updating = false;
@@ -387,7 +487,7 @@ define('ko.ninja.ajax',[],function () {
         }
       };
 
-      this.update = function(passData, postMethod) { 
+      this.update = function(passData, postMethod) {
         if (self.updating) {
             return false;
         }
@@ -396,7 +496,7 @@ define('ko.ninja.ajax',[],function () {
         if (window.XMLHttpRequest) {
           self.AJAX = new XMLHttpRequest();
 
-        } else {                                  
+        } else {
           self.AJAX = new ActiveXObject('Microsoft.XMLHTTP');
         }
 
@@ -405,12 +505,12 @@ define('ko.ninja.ajax',[],function () {
 
         } else {
 
-          self.AJAX.onreadystatechange = function() {  
-            if (self.AJAX.readyState === 4) {             
-              self.updating = false;                
-              self.callback(self.AJAX.responseText,self.AJAX.status,self.AJAX.responseXML);        
-              self.AJAX = null;                                         
-            }                                                      
+          self.AJAX.onreadystatechange = function() {
+            if (self.AJAX.readyState === 4) {
+              self.updating = false;
+              self.callback(self.AJAX.responseText,self.AJAX.status,self.AJAX.responseXML);
+              self.AJAX = null;
+            }
           };
 
           self.updating = new Date();
@@ -428,29 +528,50 @@ define('ko.ninja.ajax',[],function () {
             self.AJAX.send(passData);
 
           } else {
-            uri = urlCall + '?' + passData + '&timestamp=' + (self.updating.getTime()); 
-            self.AJAX.open('GET', uri, true);                             
-            self.AJAX.send(null);                                         
+            uri = urlCall + '?' + passData + '&timestamp=' + (self.updating.getTime());
+            self.AJAX.open('GET', uri, true);
+            self.AJAX.send(null);
           }
 
-          return true;                                             
-        }                                                                       
+          return true;
+        }
       };
 
-      var urlCall = url;        
+      var urlCall = url;
       this.callback = callbackFunction || function () {};
 
     };
-});
-/*global $ */
 
-define('ko.ninja.httpModel',[
-    'ko.ninja.baseModel',
-    'ko.ninja.ajax',
-    'underscore'
-], function (BaseModel, Ajax, _) {
+    if (typeof define === 'function' && define.amd) {
+      return Ajax;
+    } else {
+      ko.ninjaAjax = Ajax;
+    }
 
-    return BaseModel.extend({
+}));
+/*global define, $ */
+
+(function (root, factory) {
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.httpModel',[
+            'ko.ninja.baseModel',
+            'ko.ninja.ajax',
+            'underscore'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root.ko.ninjaBaseModel, root.ko.ninjaAjax, root._, root.ko);
+    }
+
+} (this, function (BaseModel, Ajax, _, ko) {
+
+    
+
+    var HttpModel = BaseModel.extend({
 
         suffix: '',
 
@@ -546,15 +667,35 @@ define('ko.ninja.httpModel',[
 
     });
 
-});
-/*global io */
+    if (typeof define === 'function' && define.amd) {
+        return HttpModel;
+    } else {
+        ko.ninjaHttpModel = HttpModel;
+    }
 
-define('ko.ninja.socketModel',[
-    'ko.ninja.baseModel',
-    'underscore'
-], function (BaseModel, _) {
+}));
+/*global io, define */
 
-    return BaseModel.extend({
+(function (root, factory) {
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.socketModel',[
+            'ko.ninja.baseModel',
+            'underscore'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root.ko.ninjaBaseModel, root._, root.ko);
+    }
+
+} (this, function (BaseModel, _, ko) {
+
+    
+
+    var SocketModel = BaseModel.extend({
 
         find: function (query, done) {
             if (!done) {
@@ -607,13 +748,37 @@ define('ko.ninja.socketModel',[
 
     });
 
-});
-define('ko.ninja.model',[
-    'ko.ninja.extend',
-    'ko.ninja.localStorageModel',
-    'ko.ninja.httpModel',
-    'ko.ninja.socketModel'
-], function (extend, LocalStorageModel, HttpModel, SocketModel) {
+    if (typeof define === 'function' && define.amd) {
+        return SocketModel;
+    } else {
+        ko.ninjaSocketModel = SocketModel;
+    }
+
+}));
+/*global define, ko */
+
+(function (root, factory) {
+
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.model',[
+            'ko.ninja.extend',
+            'ko.ninja.localStorageModel',
+            'ko.ninja.httpModel',
+            'ko.ninja.socketModel'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root.ko.ninjaExtend, root.ko.ninjaLocalStorageModel, root.ko.ninjaSocketModel);
+    }
+
+} (this, function (extend, LocalStorageModel, HttpModel, SocketModel) {
+
+    
+
     var Model = function (options) {
         var model;
         switch (options.storage) {
@@ -629,15 +794,38 @@ define('ko.ninja.model',[
         }
         return model;
     };
-    Model.extend = extend;
-    return Model;
-});
-define('ko.ninja.validation',[
-    'knockout',
-    'underscore'
-], function (ko, _) {
 
-    return {
+    Model.extend = extend;
+
+    if (typeof define === 'function' && define.amd) {
+        return Model;
+    } else {
+        ko.ninjaModel = Model;
+    }
+
+}));
+/*global define */
+
+(function (root, factory) {
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.validation',[
+            'knockout',
+            'underscore'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root.ko, root._);
+    }
+
+} (this, function (ko, _) {
+
+    
+
+    var validation = {
 
         validationTypes: {
 
@@ -739,15 +927,37 @@ define('ko.ninja.validation',[
 
     };
 
-});
-define('ko.ninja.viewModel',[
-    'knockout',
-    'underscore',
-    'ko.ninja.events',
-    'ko.ninja.extend',
-    'ko.ninja.model',
-    'ko.ninja.validation'
-], function (ko, _, Events, extend, Model, Validation) {
+    if (typeof define === 'function' && define.amd) {
+        return validation;
+    } else {
+        ko.ninjaValidation = validation;
+    }
+
+}));
+/*global define */
+
+(function (root, factory) {
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.viewModel',[
+            'knockout',
+            'underscore',
+            'ko.ninja.events',
+            'ko.ninja.extend',
+            'ko.ninja.model',
+            'ko.ninja.validation'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root.ko, root._, root.ko.ninjaEvents, root.ko.ninjaExtend, root.ko.ninjaModel, root.ko.ninjaValidation);
+    }
+
+} (this, function (ko, _, Events, extend, Model, Validation) {
+
+    
 
     var setupObservables = function(options) {
         var computedObservables = _.functions(this.observables);
@@ -779,7 +989,7 @@ define('ko.ninja.viewModel',[
             }
 
             this[prop].subscribe(function(value) {
-                this.trigger("change:" + prop, value);
+                this.trigger('change:' + prop, value);
             }, this);
         }, this);
 
@@ -882,16 +1092,47 @@ define('ko.ninja.viewModel',[
 
     ViewModel.extend = extend;
 
-    return ViewModel;
+    if (typeof define === 'function' && define.amd) {
+        return ViewModel;
+    } else {
+        ko.ninjaViewModel = ViewModel;
+    }
 
-});
-define('ko.ninja',[
-    'underscore',
-    'knockout',
-    'ko.ninja.viewModel',
-    'ko.ninja.model'
-], function (_, ko, ViewModel, Model) {
+}));
+/*global define */
+
+(function (root, factory) {
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja',[
+            'underscore',
+            'knockout',
+            'ko.ninja.viewModel',
+            'ko.ninja.model'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root._, root.ko, root.ko.ninjaViewModel, root.ko.ninjaModel);
+    }
+
+} (this, function (_, ko, ViewModel, Model) {
+
+    
+
     ko.ViewModel = ViewModel;
     ko.Model = Model;
-    return ko;
-});
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        return ko;
+
+    // Non-AMD
+    } else {
+        ko.ViewModel = ViewModel;
+        ko.Model = Model;
+    }
+
+}));

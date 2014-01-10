@@ -1,4 +1,7 @@
-/*global module:false*/
+/*jslint module: false, node: true */
+/*global require */
+
+'use strict';
 
 var path = require('path');
 
@@ -23,7 +26,12 @@ module.exports = function(grunt) {
                     exclude: [
                         'underscore',
                         'knockout'
-                    ]
+                    ],
+                    done: function(done, output) {
+                        console.log('TEST');
+                        console.log(typeof output);
+                        done();
+                    }
                 }
             },
             pretty: {

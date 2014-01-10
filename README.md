@@ -26,6 +26,17 @@ define(['ko.ninja'], function (ko) {
 });
 ```
 
+If your project isn't using AMD, ko.ninja will also work as a non-AMD script like this:
+
+```html
+<script src="bower_components/dist/ko.ninja.min.js"></script>
+<script>
+  ko.ViewModel.extend({
+    ...
+  });
+</script>
+```
+
 ### ko.ViewModel
 The `ko.ViewModel` is a constructor to define ViewModels.
 
