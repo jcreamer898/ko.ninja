@@ -30,11 +30,20 @@
             </form>
              
             <p>Your values:</p>
-            <select multiple="multiple" height="5" data-bind="options:allItems, selectedOptions:selectedItems"> </select>
+            <select multiple="multiple" height="5" data-bind="{
+                options: meals,
+                optionsText: function (meal) {
+                    return meal.name();
+                },
+                optionsValue: function (meal) {
+                    return meal.id();
+                },
+                selectedOptions: selectedItems
+            }"> </select>
              
             <div>
                 <button data-bind="click: removeSelected, enable: selectedItems().length > 0">Remove</button>
-                <button data-bind="click: sortItems, enable: allItems().length > 1">Sort</button>
+                <button data-bind="click: sortItems, enable: meals().length > 1">Sort</button>
             </div>
         </div>
 
@@ -44,36 +53,60 @@
     <script src="../../ko.ninja.requireConfig.js"></script>
     <script>
         require(['ko.ninja'], function (ko) {
+            
+            var Meal = ko.Model.extend({
+                observables: {
+                    id: 0,
+                    name: ''   
+                },
+                options: {
+                    name: 'item'
+                }
+            });
+
+            var Meals = ko.Collection.extend({
+                model: Meal,
+                options: {
+                    name: 'items',
+                    storage: 'localStorage'
+                }
+            });
+
             var ListViewModel = ko.ViewModel.extend({
 
                 el: '#list',
 
-                observables: {
-                    itemToAdd: '',
-                    allItems: ['Green Eggs', 'Ham'],
-                    selectedItems: ['Ham'],
-                    id: '1'
+                options: {
+                    autoSync: true
                 },
 
-                model: {
-                    storage: 'localStorage',
-                    name: 'list'
+                observables: {
+                    itemToAdd: '',
+                    selectedItems: [],
+                    sortDesc: false
+                },
+
+                collections: {
+                    meals: new Meals()
                 },
 
                 addItem: function () {
-                    if ((this.itemToAdd() != '') && (this.allItems.indexOf(this.itemToAdd()) < 0)) {
-                        this.allItems.push(this.itemToAdd());
+                    if ((this.itemToAdd() != '')) {
+                        this.collections.meals.insert({
+                            name: this.itemToAdd()
+                        });
                     }
                     this.itemToAdd('');
                 },
 
                 removeSelected: function () {
-                    this.allItems.removeAll(this.selectedItems());
+                    this.collections.meals.remove(this.selectedItems());
                     this.selectedItems([]);
                 },
 
                 sortItems: function () {
-                    this.allItems.sort();
+                    this.sortDesc(!this.sortDesc());
+                    this.collections.meals.sort('name', this.sortDesc());
                 }
 
             });

@@ -21,10 +21,10 @@
     <div class="liveExample">
         <div id="form">
 
-            <div style="display: none" class="form-errors" data-bind="visible: errors().length">
+            <div style="display: none" class="form-errors" data-bind="visible: model.errors().length">
                 <p>There are errors. Please fix them!</p>
                 <p>Here are the fields that have errors:</p>
-                <ul data-bind="foreach: errors">
+                <ul data-bind="foreach: model.errors">
                     <li>
                         <span data-bind="text: observable"></span> - 
                         <span data-bind="text: error"></span>
@@ -67,7 +67,7 @@
             </p>
             <div class="error-message" data-bind="html: answer.error"></div>
 
-            <input style="margin-left: 100px" type="button" data-bind="click: submitPerson" value="Save" />
+            <input style="margin-left: 100px" type="button" data-bind="click: submitPerson, value: saveButton" value="Save" />
         </div>
     </div>
 
@@ -76,53 +76,64 @@
     <script src="../../ko.ninja.requireConfig.js"></script>
     <script>
         require(['ko.ninja'], function (ko) {
-            var ValidationViewModel = ko.ViewModel.extend({
+            var Person = ko.Model.extend({
+                observables: {
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    phone: '',
+                    answer: ''
+                },
+
+                validation: {
+                    firstName: {
+                        required: 'Your first name is required',
+                        minLength: {
+                            message: 'Please make sure your name is at least 3 characters long.',
+                            value: 3
+                        }
+                    },
+                    email: {
+                        required: 'Your email address is required',
+                        email: 'Please enter a valid email address'
+                    },
+                    phone: {
+                        number: 'Please enter a valid number',
+                        length: {
+                            message: 'Please make sure your phone number has 9 digits',
+                            value: 9
+                        }
+                    },
+                    answer: {
+                        maxLength: {
+                            message: 'You have entered more than 2 characters... there is no way you are typing "44"!',
+                            value: 2
+                        },
+                        custom: {
+                            message: 'Please enter "44"',
+                            validator: function (value) {
+                                return value !== '44';
+                            }
+                        }
+                    }
+                }
+            });
+
+        var ValidationViewModel = ko.ViewModel.extend({
 
             el: '#form',
 
             observables: {
-                firstName: '',
-                lastName: '',
-                email: '',
-                phone: '',
-                answer: ''
+                saveButton: 'Save it'
             },
 
-            validation: {
-                firstName: {
-                    required: 'Your first name is required',
-                    minLength: {
-                        message: 'Please make sure your name is at least 3 characters long.',
-                        value: 3
-                    }
-                },
-                email: {
-                    required: 'Your email address is required',
-                    email: 'Please enter a valid email address'
-                },
-                phone: {
-                    number: 'Please enter a valid number',
-                    length: {
-                        message: 'Please make sure your phone number has 9 digits',
-                        value: 9
-                    }
-                },
-                answer: {
-                    maxLength: {
-                        message: 'You have entered more than 2 characters... there is no way you are typing "44"!',
-                        value: 2
-                    },
-                    custom: {
-                        message: 'Please enter "44"',
-                        validator: function (value) {
-                            return value !== '44';
-                        }
-                    }
-                }
-            },
+            model: new Person({
+                firstName: 'Tyson',
+                lastName: 'Cadenhead'
+            }),
 
             submitPerson: function () {
-                var errors = this.validate();
+                var errors = this.model.validate();
                 if (!errors) {
                     alert('Your form has been submitted. Just kidding!')
                 }

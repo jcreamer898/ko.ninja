@@ -100,7 +100,7 @@ module.exports = function(grunt) {
             all: {
                 options: {
                     urls: [
-                        'http://localhost:8001/qunit.html'
+                        'http://localhost:8003/qunit.html'
                     ]
                 }
             }
