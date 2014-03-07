@@ -25,7 +25,11 @@ The name of the collection. This is used to automatically build requests for bac
 
 #### {String} storage
 
-The storage type to use. Current options are "localStorage", "http" and "socket.io".
+The storage type to use. Current options are:
+
+- [HTTP Storage](httpStorage.md)
+- [Local Storage](localStorage.md)
+- [Socket IO Storage](socketIoStorage.md)
 
 #### {String} port
 
