@@ -45,3 +45,7 @@ me.on("change:firstName", function(value) {
 
 me.firstName("foo");
 ```
+
+## [Pub/Sub](pubsub.md)
+
+The viewModel can publish and subscribe to messages.

@@ -105,3 +105,7 @@ dogs.sort('name', true); // Sorts by name descending
 #### toJSON ()
 
 Returns an array of all of the models converted to JSON.
+
+## [Pub/Sub](pubsub.md)
+
+The collection can publish and subscribe to messages.
