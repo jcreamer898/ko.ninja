@@ -18,11 +18,13 @@
     <script src="ko.ninja.requireConfig.js"></script>
     <script>
     	require([
-    		'model.spec.js',
-            'httpModel.spec.js',
-            'socketModel.spec.js',
+    		'storage.spec.js',
+            'httpStorage.spec.js',
+            'socketStorage.spec.js',
     		'viewModel.spec.js',
-            'validation.spec.js'
+            'validation.spec.js',
+            'model.spec.js',
+            'collection.spec.js'
 		], function () {
 			QUnit.start();
 		});

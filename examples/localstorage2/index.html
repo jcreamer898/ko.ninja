@@ -26,10 +26,10 @@
         <div class="liveExample">
             <div id="form">
 
-                <div style="display: none" class="form-errors" data-bind="visible: errors().length">
+                <div style="display: none" class="form-errors" data-bind="visible: model.errors().length">
                     <p>There are errors. Please fix them!</p>
                     <p>Here are the fields that have errors:</p>
-                    <ul data-bind="foreach: errors">
+                    <ul data-bind="foreach: model.errors">
                         <li>
                             <span data-bind="text: observable"></span> - 
                             <span data-bind="text: error"></span>
@@ -38,20 +38,20 @@
                 </div>
 
                 <!-- Required -->
-                <p data-bind="css: { error: firstName.error }">
+                <p data-bind="css: { error: model.firstName.error }">
                     <label>First name:</label>
-                    <input data-bind="value: firstName, valueUpdate:'afterkeydown'" />
+                    <input data-bind="value: model.firstName, valueUpdate:'afterkeydown'" />
                 </p>
-                <div class="error-message" data-bind="html: firstName.error"></div>
+                <div class="error-message" data-bind="html: model.firstName.error"></div>
                 
                 <!-- Required -->
-                <p data-bind="css: { error: lastName.error }">
+                <p data-bind="css: { error: model.lastName.error }">
                     <label>Last name:</label>
-                    <input data-bind="value: lastName, valueUpdate:'afterkeydown'" />
+                    <input data-bind="value: model.lastName, valueUpdate:'afterkeydown'" />
                 </p>
-                <div class="error-message" data-bind="html: lastName.error"></div>
+                <div class="error-message" data-bind="html: model.lastName.error"></div>
                 
-                <div style="margin-left: 100px">Hi <span data-bind="text: fullName" style="font-weight: bold;"></span>, change the form values and refresh the page to see them persist.</div>
+                <div style="margin-left: 100px">Hi <span data-bind="text: model.fullName" style="font-weight: bold;"></span>, change the form values and refresh the page to see them persist.</div>
 
             </div>
         </div>
@@ -63,22 +63,15 @@
     <script>
         require(['ko.ninja'], function (ko) {
 
-            var Person = ko.ViewModel.extend({
-
-                el: '#form',
+            var Person = ko.Model.extend({
 
                 observables: {
-                    id: null,
+                    id: 0,
                     firstName: '',
                     lastName: '',
                     fullName: function () {
                         return this.firstName() + ' ' + this.lastName()
                     }
-                },
-            
-                model: {
-                    name: 'person',
-                    storage: 'localStorage'
                 },
 
                 validation: {
@@ -88,13 +81,30 @@
                     lastName: {
                         required: 'Your last name is required'
                     }
+                },
+
+                options: {
+                    name: 'person',
+                    storage: 'localStorage'
                 }
 
             });
 
-            var person = new Person({
-                id: 1
+            var PersonViewModel = ko.ViewModel.extend({
+
+                el: '#form',
+
+                options: {
+                    autoSync: true
+                },
+            
+                model: new Person({
+                    id: 1
+                })
+
             });
+
+            var person = new PersonViewModel();
         
         });
     </script>

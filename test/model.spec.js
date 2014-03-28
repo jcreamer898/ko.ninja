@@ -1,11 +1,27 @@
+/*global define, module, test, equal */
+
 define([
     'ko.ninja.model'
 ], function (Model) {
 
-    module('ko.Model', {
+    'use strict';
+
+    module('ko.model', {
         setup: function () {
-            this.model = new Model({
-                name: 'friends'
+            this.Friend = Model.extend({
+                observables: {
+                    id: null,
+                    firstName: 'Tyson',
+                    lastName: 'Cadenhead'
+                },
+                options: {
+                    autoSync: false,
+                    name: 'friend'
+                }
+            });
+            this.friend = new this.Friend({
+                id: 1,
+                firstName: 'Linus'
             });
         },
         teardown: function () {
@@ -13,80 +29,46 @@ define([
         }
     });
 
-    asyncTest('when inserting data', function () {
-        this.model.insert({
-            firstName: 'Jonathan',
-            lastName: 'Creamer'
-        }, function (data) {
-            var record = JSON.parse(localStorage['friends-' + data.id]);
-            ok(data.id, 'it should create an id');
-            equal(record.firstName, 'Jonathan', 'it should set the firstName');
-            equal(record.lastName, 'Creamer', 'it should set the lastName');
-            start();
-        });
+    test('when initializing a model', function () {
+        equal(this.friend.options.name, 'friend', 'it should pass in parameters');
+        equal(this.friend.options.autoSync, false);
+        equal(typeof this.friend.initialize, 'function', 'it should inherit the baseClass');
     });
 
-    asyncTest('when updating data', function () {
-        localStorage['friends-1'] = JSON.stringify({ id: 1, firstName: 'Jonathan', lastName: 'Creamer' });
-        this.model.update('1', {
-            id: 1,
-            firstName: 'Tyson',
-            lastName: 'Cadenhead'
-        }, function () {
-            var record = JSON.parse(localStorage['friends-1']);
-            equal(record.firstName, 'Tyson', 'it should change the firstName');
-            start();
-        });
+    test('when initializing with observables', function () {
+        equal(this.friend.firstName(), 'Linus');
+        this.friend.firstName('Milo');
+        equal(this.friend.firstName(), 'Milo');
     });
 
-    asyncTest('when using the save shortcut', function () {
-        var self = this;
-        this.model.save({
-            firstName: 'Jonathan'
-        }, function (data) {
-            var record = JSON.parse(localStorage['friends-' + data.id]);
-            equal(record.firstName, 'Jonathan', 'it should save the friend');
-            self.model.save({
-                id: data.id,
-                firstName: 'Tyson'
-            }, function (updatedData) {
-                var record = JSON.parse(localStorage['friends-' + data.id]);
-                equal(record.firstName, 'Tyson', 'it should update the friend');
-                equal(updatedData.id, data.id, 'it should have the same id');
-                start();
-            });
-        });
+    test('when we set something on the model', function () {
+        this.friend.set('lastName', 'Creamer');
+        equal(this.friend.get('lastName'), 'Creamer');
     });
 
-    asyncTest('when removing data', function () {
-        localStorage['friends-1'] = JSON.stringify({ id: 1, firstName: 'Jonathan', lastName: 'Creamer' });
-        this.model.remove('1', function () {
-            ok(!localStorage['friends-1'], 'it should remove the record');
-            start();
-        });
+    test('when we check to see if the model contains something', function () {
+        this.friend.firstName('Tyson');
+        ok(this.friend.has('firstName'));
+        this.friend.firstName(null);
+        ok(!this.friend.has('firstName'));
     });
 
-    asyncTest('when finding a single record', function () {
-        localStorage['friends-1'] = JSON.stringify({ id: 1, firstName: 'Jonathan', lastName: 'Creamer' });
-        this.model.findOne('1', function (data) {
-            equal(data.firstName, 'Jonathan', 'it should find the record');
-            start();
-        });
+    test('when we clear the items in the model', function () {
+        this.friend.clear();
+        ok(!this.friend.has('firstName'));
+        ok(!this.friend.has('id'));
     });
 
-    asyncTest('when we find multiple records', function () {
-        localStorage['friends-1'] = JSON.stringify({ id: 1, firstName: 'Jonathan', lastName: 'Creamer' });
-        localStorage['friends-2'] = JSON.stringify({ id: 2, firstName: 'Tyson', lastName: 'Cadenhead' });
-        localStorage['friends-3'] = JSON.stringify({ id: 3, firstName: 'Trae', lastName: 'Cadenhead' });
+    test('when we convert the data to JSON', function () {
+        this.friend.firstName('Heather');
+        this.friend.lastName('Cadenhead');
+        equal(this.friend.toJSON().firstName, 'Heather');
+        equal(this.friend.toJSON().lastName, 'Cadenhead');
+    });
 
-        this.model.find({
-            lastName: 'Cadenhead'
-        }, function (data) {
-            equal(data.length, 2, 'it should get both records with the lastName of Cadenhead');
-            equal(data[0].lastName, 'Cadenhead', 'it should have Cadenhead as the lastName of the first record');
-            equal(data[0].lastName, 'Cadenhead', 'it should have Cadenhead as the lastName of the second record');
-            start();
-        });
+    test('when we get the id', function () {
+        this.friend.id(123);
+        equal(this.friend.getId(), 123);
     });
 
 });
