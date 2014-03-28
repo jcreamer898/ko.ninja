@@ -219,6 +219,105 @@
 /*global define */
 
 (function (root, factory) {
+
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.pubsub',[
+            'underscore',
+            'knockout'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root._, root.ko);
+    }
+
+} (this, function (_, ko) {
+
+    
+
+    var subscribable = new ko.subscribable(),
+
+        /**
+        * @mixin PubSub
+        */
+        PubSub = {
+
+            _subscriptions: {},
+
+            /**
+            * Sets up all of the subscriptions passed into the class through the subscriptions object
+            *
+            * @method _setupSubscriptions
+            * @param {Object} options
+            */
+            _setupSubscriptions: function (options) {
+                options = _.extend({}, this, options || {});
+                if (options.subscriptions) {
+                    _.each(options.subscriptions, function (callback, topic) {
+                        this.subscribe(topic, callback);
+                    }, this);
+                }
+            },
+
+            /**
+            * Publishes a message
+            *
+            * @method publish
+            * @param {String} topic
+            * @param {Object} data
+            */
+            publish: function (topic, data) {
+                subscribable.notifySubscribers(data, topic);
+            },
+
+            /**
+            * Subscribes to a topic
+            *
+            * @method subscribe
+            * @param {String} topic
+            * @param {Function} callback 
+            */
+            subscribe: function (topic, callback) {
+                this._subscriptions[topic] = subscribable.subscribe(callback.bind(this), this, topic);
+            },
+
+            /**
+            * Unsubsribes a single subscription
+            *
+            * @method unsubscribe
+            * @param {String} topic
+            */
+            unsubscribe: function (topic) {
+                this._subscriptions[topic].dispose();
+                delete this._subscriptions[topic];
+            },
+
+            /**
+            * Unsubscribes all of the subscriptions
+            *
+            * @method unsubscribeAll
+            */
+            unsubscribeAll: function () {
+                _.each(this._subscriptions, function (value, topic) {
+                    this.unsubscribe(topic);
+                }, this);
+            }
+
+        };
+
+    if (typeof define === 'function' && define.amd) {
+        return PubSub;
+    } else {
+        ko.ninjaPubSub = PubSub;
+    }
+
+}));
+/*global define */
+
+(function (root, factory) {
     
 
     // AMD
@@ -296,15 +395,16 @@
             'knockout',
             'underscore',
             'ko.ninja.events',
+            'ko.ninja.pubsub',
             'ko.ninja.extend'
         ], factory);
 
     // Non-AMD
     } else {
-        factory(root.ko, root._, root.ko.ninjaEvents, root.ko.ninjaExtend, root.ko.ninjaModel);
+        factory(root.ko, root._, root.ko.ninjaEvents, root.ko.ninjaPubSub, root.ko.ninjaExtend, root.ko.ninjaModel);
     }
 
-} (this, function (ko, _, Events, extend) {
+} (this, function (ko, _, Events, PubSub, extend) {
 
     
 
@@ -395,6 +495,8 @@
 
         setupObservables.call(this, options);
 
+        this._setupSubscriptions(options);
+
         this.initialize.apply(this, arguments);
 
         options.el = options.el || this.el;
@@ -405,7 +507,7 @@
 
     };
 
-    _.extend(ViewModel.prototype, Events, {
+    _.extend(ViewModel.prototype, Events, PubSub, {
         initialize: function() {}
     });
 
@@ -415,114 +517,6 @@
         return ViewModel;
     } else {
         ko.ninjaViewModel = ViewModel;
-    }
-
-}));
-/*global define */
-
-(function (root, factory) {
-    
-
-    // AMD
-    if (typeof define === 'function' && define.amd) {
-        define('ko.ninja.class',[
-            'knockout',
-            'underscore',
-            'ko.ninja.events',
-            'ko.ninja.extend'
-        ], factory);
-
-    // Non-AMD
-    } else {
-        factory(root.ko, root._, root.ko.ninjaEvents, root.ko.ninjaExtend);
-    }
-
-} (this, function (ko, _, Events, extend) {
-
-    
-
-    //### ko.Class
-    var Class = function Class (options) {
-        options = options || {};
-        this._setupObservables.call(this, options);
-        if (this._setup) {
-            this._setup(options);
-        }
-        this.initialize(options);
-    };
-
-    _.extend(Class.prototype, Events, {
-
-        _setupObservables: function(options) {
-
-            if (!this.observables || !options) {
-                return;
-            }
-
-            var computedObservables;
-
-            _.each(options, function (value, name) {
-                if (!_.isUndefined(this.observables[name])) {
-                    this.observables[name] = value;
-                    delete options[name];
-                }
-            }, this);
-
-            computedObservables = _.functions(this.observables);
-
-            computedObservables = _.reduce(this.observables, function(memo, value, prop) {
-                if (_.isObject(value) && !_.isArray(value) && (value.read || value.write)) {
-                    memo.push(prop);
-                }
-                return memo;
-            }, computedObservables);
-
-            // Process the observables first
-            _.each(_.omit(this.observables, computedObservables), function (value, prop) {
-                if (_.isArray(value)) {
-                    if (ko.isObservable(options[prop])) {
-                        this[prop] = options[prop];
-                    }
-                    else {
-                        this[prop] = ko.observableArray((options[prop] || value).slice(0));
-                    }
-                }
-                else {
-                    if (ko.isObservable(options[prop])) {
-                        this[prop] = options[prop];
-                    }
-                    else {
-                        this[prop] = ko.observable(options[prop] || value);
-                    }
-                }
-
-                this[prop].subscribe(function(value) {
-                    this.trigger('change:' + prop, value);
-                }, this);
-            }, this);
-
-            // Now process the computedObservables
-            _.each(_.pick(this.observables, computedObservables), function(value, prop) {
-                this[prop] = ko.computed({
-                    read: this.observables[prop],
-                    write: function () {
-                        // Keeps it from breaking.
-                        // Perhaps we need a way to allow writing to computed observables, though
-                    },
-                    owner: this
-                }, this);
-            }, this);
-        },
-
-        initialize: function() {}
-    });
-
-    Class.extend = extend;
-
-    if (typeof define === 'function' && define.amd) {
-        return Class;
-    } else {
-        ko.ninjaClass = Class;
     }
 
 }));
@@ -1232,6 +1226,103 @@
 /*global define */
 
 (function (root, factory) {
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.observables',[
+            'knockout',
+            'underscore'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root.ko, root._);
+    }
+
+} (this, function (ko, _) {
+
+    
+
+    var Observables = {
+
+        /**
+        * @method _setupObservables
+        * @param {Object} options
+        */
+        _setupObservables: function(options) {
+
+            if (!this.observables || !options) {
+                return;
+            }
+
+            var computedObservables;
+
+            _.each(options, function (value, name) {
+                if (!_.isUndefined(this.observables[name])) {
+                    this.observables[name] = value;
+                    delete options[name];
+                }
+            }, this);
+
+            computedObservables = _.functions(this.observables);
+
+            computedObservables = _.reduce(this.observables, function(memo, value, prop) {
+                if (_.isObject(value) && !_.isArray(value) && (value.read || value.write)) {
+                    memo.push(prop);
+                }
+                return memo;
+            }, computedObservables);
+
+            // Process the observables first
+            _.each(_.omit(this.observables, computedObservables), function (value, prop) {
+                if (_.isArray(value)) {
+                    if (ko.isObservable(options[prop])) {
+                        this[prop] = options[prop];
+                    }
+                    else {
+                        this[prop] = ko.observableArray((options[prop] || value).slice(0));
+                    }
+                }
+                else {
+                    if (ko.isObservable(options[prop])) {
+                        this[prop] = options[prop];
+                    }
+                    else {
+                        this[prop] = ko.observable(options[prop] || value);
+                    }
+                }
+
+                this[prop].subscribe(function(value) {
+                    this.trigger('change:' + prop, value);
+                }, this);
+            }, this);
+
+            // Now process the computedObservables
+            _.each(_.pick(this.observables, computedObservables), function(value, prop) {
+                this[prop] = ko.computed({
+                    read: this.observables[prop],
+                    write: function () {
+                        // Keeps it from breaking.
+                        // Perhaps we need a way to allow writing to computed observables, though
+                    },
+                    owner: this
+                }, this);
+            }, this);
+        }
+
+    };
+
+    if (typeof define === 'function' && define.amd) {
+        return Observables;
+    } else {
+        ko.ninjaClass = Observables;
+    }
+
+}));
+/*global define */
+
+(function (root, factory) {
 
     
 
@@ -1239,23 +1330,43 @@
     if (typeof define === 'function' && define.amd) {
         define('ko.ninja.model',[
             'underscore',
-            'ko.ninja.class',
             'ko.ninja.extend',
             'ko.ninja.storage',
             'knockout',
-            'ko.ninja.validation'
+            'ko.ninja.validation',
+            'ko.ninja.observables',
+            'ko.ninja.events',
+            'ko.ninja.pubsub'
         ], factory);
 
     // Non-AMD
     } else {
-        factory(root._, root.ko.ninjaClass, root.ko.ninjaExtend, root.ko.ninjaStorage, root.ko, root.ko.ninjaValidation);
+        factory(root._, root.ko.ninjaExtend, root.ko.ninjaStorage, root.ko, root.ko.ninjaValidation, root.ko.ninjaObservables, root.ko.ninjaEvents, root.ko.ninjaPubSub);
     }
 
-} (this, function (_, Class, extend, Storage, ko, Validation) {
+} (this, function (_, extend, Storage, ko, Validation, Observables, Events, PubSub) {
 
     
 
-    var Model = Class.extend(_.extend(Validation, {
+    var Model = function (options) {
+
+        options = options || {};
+
+        this._setupObservables.call(this, options);
+        
+        _.extend(this, new Storage(_.extend({}, this, options)));
+
+        if (this.validation) {
+            this.watchValidations();
+        }
+
+        // Setup Pub / Sub
+        this._setupSubscriptions(options);
+
+        this.initialize(options);
+    };
+
+    _.extend(Model.prototype, Events, Observables, Validation, PubSub, {
 
         idAttribute: 'id',
 
@@ -1265,20 +1376,6 @@
         */
         getId: function () {
             return this[this.idAttribute]();
-        },
-
-        /**
-        * @method _setup
-        * @param {Object} options
-        */
-        _setup: function (options) {
-            
-            _.extend(this, new Storage(_.extend({}, this, options)));
-
-            if (this.validation) {
-                this.watchValidations();
-            }
-
         },
 
         /**
@@ -1369,9 +1466,11 @@
                     });
                 }, this);
             }
-        }
+        },
 
-    }));
+        initialize: function () {}
+
+    });
 
     Model.extend = extend;
 
@@ -1394,15 +1493,17 @@
             'ko.ninja.extend',
             'knockout',
             'underscore',
-            'ko.ninja.storage'
+            'ko.ninja.storage',
+            'ko.ninja.events',
+            'ko.ninja.pubsub'
         ], factory);
 
     // Non-AMD
     } else {
-        factory(root.ko.ninjaExtend, root.ko, root._, root.ko.ninjaStorage);
+        factory(root.ko.ninjaExtend, root.ko, root._, root.ko.ninjaStorage, root.ko.ninjaEvents, root.ko.ninjaPubSub);
     }
 
-} (this, function (extend, ko, _, Storage) {
+} (this, function (extend, ko, _, Storage, Events, PubSub) {
 
     
 
@@ -1612,7 +1713,11 @@
             _.each(models || [{}], this.insert, this);
         }
 
+        this._setupSubscriptions(this);
+
     };
+
+    _.extend(Collection.prototype, Events, PubSub);
 
     Collection.extend = extend;
 

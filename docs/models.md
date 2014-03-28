@@ -218,3 +218,7 @@ model.find({
 ## [Validations](validations.md)
 
 There are a ton of validations you can do on the model before it is allowed to save to a backend service.
+
+## [Pub/Sub](pubsub.md)
+
+The model can publish and subscribe to messages.

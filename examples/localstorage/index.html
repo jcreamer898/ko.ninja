@@ -72,8 +72,6 @@
                 }
             });
 
-            console.log(new Meal());
-
             var ListViewModel = ko.ViewModel.extend({
 
                 el: '#list',
@@ -113,7 +111,12 @@
 
             });
 
-            new ListViewModel();
+            window.vm = new ListViewModel();
+
+            console.log(vm);
+            vm.subscribe('my-topic', function (msg) {
+                alert(msg);
+            });
         });
     </script>
 

@@ -25,7 +25,11 @@ The name of the collection. This is used to automatically build requests for bac
 
 #### {String} storage
 
-The storage type to use. Current options are "localStorage", "http" and "socket.io".
+The storage type to use. Current options are:
+
+- [HTTP Storage](httpStorage.md)
+- [Local Storage](localStorage.md)
+- [Socket IO Storage](socketIoStorage.md)
 
 #### {String} port
 
@@ -101,3 +105,7 @@ dogs.sort('name', true); // Sorts by name descending
 #### toJSON ()
 
 Returns an array of all of the models converted to JSON.
+
+## [Pub/Sub](pubsub.md)
+
+The collection can publish and subscribe to messages.

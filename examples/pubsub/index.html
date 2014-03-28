@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>ko.ninja - pub/sub</title>
+    <link rel="stylesheet" type="text/css" href="http://knockoutjs.com/css/styles.css" />
+    <link rel="stylesheet" type="text/css" href="/css/styles.css" />
+</head>
+<body id="wrapper">
+
+    <br /><br />
+
+    <a href="/">&lt; back</a>
+
+    <br /><br />
+
+    <img src="https://raw.github.com/jcreamer898/ko.ninja/master/ko-ninja.gif" alt="" style="max-width:100%;">
+
+    <br /><br />
+
+    <h3>Pub/Sub Example</h3>
+
+    <p>Every time you click on the ninja, a message is published to a different viewModel that displays the number of times the ninja was clicked.<br />To see how it works, take a look at the source code, or check out out the <a href="https://github.com/jcreamer898/ko.ninja">documentation</a>.</p>
+
+    <div class="liveExample" id="container">
+
+        <div data-bind="with: messageViewModel">
+            <div data-bind="text: message">The ninja has not been clicked</div>
+        </div>
+
+        <div data-bind="with: ninjaViewModel">
+            <h3>Click the ninja:</h3>
+            <div data-bind="click: onClick">
+                <img src="http://www.ninjastars.org/wp-content/uploads/2011/07/Ninja1.jpg"  style="width: 300px; cursor: pointer;" />
+            </div>
+        </div>
+
+    </div>
+
+    <script data-main="../../ko.ninja.js" src="http://requirejs.org/docs/release/2.1.9/minified/require.js"></script>
+    <script src="../../ko.ninja.requireConfig.js"></script>
+    <script>
+        require(['ko.ninja'], function (ko) {
+
+            var NinjaViewModel = ko.ViewModel.extend({
+
+                observables: {
+                    timesClicked: 0
+                },
+
+                onClick: function () {
+                    this.timesClicked(this.timesClicked() + 1);
+                    this.publish('ninja-clicked', this.timesClicked());
+                }
+
+            });
+
+            var MessageViewModel = ko.ViewModel.extend({
+
+                observables: {
+                    timesClicked: 0,
+                    message: function () {
+                        if (!this.timesClicked()) {
+                            return 'The ninja has not been clicked';
+                        } else {
+                            return 'The ninja was clicked ' + this.timesClicked() + ' times!'
+                        }
+                    }
+                },
+
+                subscriptions: {
+                    'ninja-clicked': function (data) {
+                        this.timesClicked(data);
+                    }
+                }
+
+            });
+
+            var ContainerViewModel = ko.ViewModel.extend({
+                el: '#container',
+                messageViewModel: new MessageViewModel(),
+                ninjaViewModel: new NinjaViewModel()
+            });
+
+            new ContainerViewModel();
+
+        });
+    </script>
+
+</body>
+</html>
