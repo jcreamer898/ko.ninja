@@ -455,7 +455,7 @@
         }, this);
     };
 
-    var setupModel = function () {
+    var setupModel = function (options) {
         var model = this.model;
 
         if (this.options && this.options.autoSync) {
@@ -464,6 +464,9 @@
 
         _.each(model.observables, function (observable, name) {
             this[name] = model[name];
+            if (options[name]) {
+                this[name](options[name]);
+            }
         }, this);
 
     };
@@ -502,7 +505,10 @@
         options.el = options.el || this.el;
 
         if (options.el) {
-            ko.applyBindings(this, (typeof options.el === 'object') ? options.el : document.querySelector(options.el)[0]);
+            if (typeof options.el === 'string') {
+                options.el = document.querySelector(options.el);
+            }
+            ko.applyBindings(this, options.el);
         }
 
     };
@@ -851,12 +857,6 @@
                 $.ajax(_.extend({
                     success: function (data) {
                         params.complete(data);
-                    }.bind(this),
-                    error: function (err) {
-                        params.complete({
-                            error: true,
-                            message: err
-                        });
                     }.bind(this)
                 }, params));
 
@@ -925,6 +925,7 @@
             if (!id) {
                 id = this.getId();
             }
+            delete data[this.idAttribute];
             this.ajax({
                 url: this.urlRoot() + id + this.suffix,
                 method: 'PUT',
