@@ -5,25 +5,25 @@ var express = require('express'),
     app = express(),
     fs = require('fs'),
     server = require('http').createServer(app),
-    io = require('socket.io').listen(server);
+    io = require('socket.io').listen(server),
+    bodyParser = require('body-parser'),
+    cookieParser = require('cookie-parser'),
+    methodOverride = require('method-override');
 
 // Configure all the things
-app.configure(function() {
-    app.use(express.methodOverride());
-    app.use(express.bodyParser());
-    app.use(app.router);
-    app.use(express.cookieParser());
-    app.set('view engine', 'ejs');
-    app.set('view options', { layout: false });
+app.use(methodOverride());
+app.use(bodyParser());
+app.use(cookieParser());
+app.set('view engine', 'ejs');
+app.set('view options', { layout: false });
 
-    // Set directories
-    app.use(express['static']('bower_components'));
-    app.use(express['static']('lib'));
-    app.use(express['static']('examples'));
-    app.use(express['static']('test'));
-    app.use('/dist', express['static']('dist'));
-    app.set('views', __dirname);
-});
+// Set directories
+app.use(express['static']('bower_components'));
+app.use(express['static']('lib'));
+app.use(express['static']('examples'));
+app.use(express['static']('test'));
+app.use('/dist', express['static']('dist'));
+app.set('views', __dirname);
 
 // Require all of the modules in the server directory
 fs.readdir('./server', function (err, files) {
