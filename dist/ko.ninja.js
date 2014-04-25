@@ -1,4 +1,3 @@
-
 /*global define */
 
 (function (root, factory) {
@@ -854,18 +853,14 @@
             // Use jQuery ajax if we can
             if (typeof $ === 'function' && $.ajax) {
 
-                $.ajax(_.extend({
-                    success: function (data) {
-                        params.complete(data);
-                    }.bind(this)
-                }, params));
+                $.ajax(_.extend(params));
 
             // Use our fallback if jQuery isn't available
             } else {
 
                 ajax = new Ajax(params.url, function (data) {
-                    if (_.isFunction(params.complete)) {
-                        params.complete(JSON.parse(data));
+                    if (_.isFunction(params.success)) {
+                        params.success(JSON.parse(data));
                     }
                 });
 
@@ -886,7 +881,8 @@
                 url: this.urlRoot() + this.suffix,
                 method: 'GET',
                 data: query,
-                complete: done || query
+                success: done || query,
+                error: done || query
             });
         },
 
@@ -894,7 +890,8 @@
             this.ajax({
                 url: this.urlRoot() + id + this.suffix,
                 method: 'GET',
-                complete: done
+                success: done,
+                error: done
             });
         },
 
@@ -904,7 +901,8 @@
                 url: this.urlRoot() + this.suffix,
                 method: 'POST',
                 data: data,
-                complete: done
+                success: done,
+                error: done
             });
         },
 
@@ -916,7 +914,8 @@
             this.ajax({
                 url: this.urlRoot() + id + this.suffix,
                 method: 'DELETE',
-                complete: done
+                success: done,
+                error: done
             });
         },
 
@@ -930,7 +929,8 @@
                 url: this.urlRoot() + id + this.suffix,
                 method: 'PUT',
                 data: data,
-                complete: done
+                success: done,
+                error: done
             });
         }
 
