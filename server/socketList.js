@@ -4,8 +4,10 @@ module.exports = function (app, io) {
 
     var list = [{
         id: 1,
-        allItems: ['Dog', 'Chicken', 'Goat'],
-        selectedItems: []
+        name: 'Green Eggs'
+    }, {
+        id: 2,
+        name: 'Ham'
     }];
 
     function getListItemIndex (id) {
@@ -18,23 +20,25 @@ module.exports = function (app, io) {
 
     io.sockets.on('connection', function (socket) {
 
-        socket.on('list-findOne', function (data, done) {
-            var item = list[getListItemIndex(data.id)];
-            done(item || {
-                error: true,
-                message: 'There was an error finding your list'
-            });
+        socket.on('meals-find', function (data, done) {
+            done(list);
         });
 
-        socket.on('list-update', function (data, done) {
-            var item = getListItemIndex(data.id);
-            list[item] = _.extend(data.data, {
-                id: data.id
-            });
-            done((list[item]) ? list[item] : {
-                error: true,
-                message: 'There was an error updating your list'
-            });
+        socket.on('meal-remove', function (data, done) {
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].id == data.id) {
+                    list.splice(i, 1);
+                    done({
+                        success: true
+                    });
+                }
+            }
+        });
+
+        socket.on('meal-insert', function (data, done) {
+            data.data.id = new Date().getTime();
+            list.push(data.data);
+            done(data.data);
         });
 
     });

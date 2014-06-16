@@ -219,6 +219,105 @@
 /*global define */
 
 (function (root, factory) {
+
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.pubsub',[
+            'underscore',
+            'knockout'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root._, root.ko);
+    }
+
+} (this, function (_, ko) {
+
+    
+
+    var subscribable = new ko.subscribable(),
+
+        /**
+        * @mixin PubSub
+        */
+        PubSub = {
+
+            _subscriptions: {},
+
+            /**
+            * Sets up all of the subscriptions passed into the class through the subscriptions object
+            *
+            * @method _setupSubscriptions
+            * @param {Object} options
+            */
+            _setupSubscriptions: function (options) {
+                options = _.extend({}, this, options || {});
+                if (options.subscriptions) {
+                    _.each(options.subscriptions, function (callback, topic) {
+                        this.subscribe(topic, callback);
+                    }, this);
+                }
+            },
+
+            /**
+            * Publishes a message
+            *
+            * @method publish
+            * @param {String} topic
+            * @param {Object} data
+            */
+            publish: function (topic, data) {
+                subscribable.notifySubscribers(data, topic);
+            },
+
+            /**
+            * Subscribes to a topic
+            *
+            * @method subscribe
+            * @param {String} topic
+            * @param {Function} callback 
+            */
+            subscribe: function (topic, callback) {
+                this._subscriptions[topic] = subscribable.subscribe(callback.bind(this), this, topic);
+            },
+
+            /**
+            * Unsubsribes a single subscription
+            *
+            * @method unsubscribe
+            * @param {String} topic
+            */
+            unsubscribe: function (topic) {
+                this._subscriptions[topic].dispose();
+                delete this._subscriptions[topic];
+            },
+
+            /**
+            * Unsubscribes all of the subscriptions
+            *
+            * @method unsubscribeAll
+            */
+            unsubscribeAll: function () {
+                _.each(this._subscriptions, function (value, topic) {
+                    this.unsubscribe(topic);
+                }, this);
+            }
+
+        };
+
+    if (typeof define === 'function' && define.amd) {
+        return PubSub;
+    } else {
+        ko.ninjaPubSub = PubSub;
+    }
+
+}));
+/*global define */
+
+(function (root, factory) {
     
 
     // AMD
@@ -292,7 +391,143 @@
 
     // AMD
     if (typeof define === 'function' && define.amd) {
-        define('ko.ninja.baseModel',[
+        define('ko.ninja.viewModel',[
+            'knockout',
+            'underscore',
+            'ko.ninja.events',
+            'ko.ninja.pubsub',
+            'ko.ninja.extend'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root.ko, root._, root.ko.ninjaEvents, root.ko.ninjaPubSub, root.ko.ninjaExtend, root.ko.ninjaModel);
+    }
+
+} (this, function (ko, _, Events, PubSub, extend) {
+
+    
+
+    var setupObservables = function(options) {
+        var computedObservables = _.functions(this.observables);
+
+        computedObservables = _.reduce(this.observables, function(memo, value, prop) {
+            if (_.isObject(value) && !_.isArray(value) && (value.read || value.write)) {
+                memo.push(prop);
+            }
+            return memo;
+        }, computedObservables);
+
+        // Process the observables first
+        _.each(_.omit(this.observables, computedObservables), function (value, prop) {
+            if (_.isArray(value)) {
+                if (ko.isObservable(options[prop])) {
+                    this[prop] = options[prop];
+                }
+                else {
+                    this[prop] = ko.observableArray((options[prop] || value).slice(0));
+                }
+            }
+            else {
+                if (ko.isObservable(options[prop])) {
+                    this[prop] = options[prop];
+                }
+                else {
+                    this[prop] = ko.observable(options[prop] || value);
+                }
+            }
+
+            this[prop].subscribe(function(value) {
+                this.trigger('change:' + prop, value);
+            }, this);
+        }, this);
+
+        // Now process the computedObservables
+        _.each(_.pick(this.observables, computedObservables), function(value, prop) {
+            this[prop] = ko.computed({
+                read: this.observables[prop],
+                write: function () {
+                    // Keeps it from breaking.
+                    // Perhaps we need a way to allow writing to computed observables, though
+                },
+                owner: this
+            }, this);
+        }, this);
+    };
+
+    var setupModel = function () {
+        var model = this.model;
+
+        if (this.options && this.options.autoSync) {
+            model.autoSync(this.options.autoSync, true);
+        }
+
+        _.each(model.observables, function (observable, name) {
+            this[name] = model[name];
+        }, this);
+
+    };
+
+    var setupCollections = function () {
+        var collections = this.collections;
+        for (var collection in collections) {
+            if (collections.hasOwnProperty(collection)) {
+                if (this.options && this.options.autoSync) {
+                    collections[collection].autoSync(this.options.autoSync);
+                }
+                this[collection] = collections[collection]._models;
+            }
+        }
+    };
+
+    //### ko.ViewModel
+    var ViewModel = function ViewModel(options) {
+
+        options = options || {};
+
+        if (this.model) {
+            setupModel.call(this, options);
+        }
+
+        if (this.collections) {
+            setupCollections.call(this, options);
+        }
+
+        setupObservables.call(this, options);
+
+        this._setupSubscriptions(options);
+
+        this.initialize.apply(this, arguments);
+
+        options.el = options.el || this.el;
+
+        if (options.el) {
+            ko.applyBindings(this, (typeof options.el === 'object') ? options.el : document.querySelector(options.el)[0]);
+        }
+
+    };
+
+    _.extend(ViewModel.prototype, Events, PubSub, {
+        initialize: function() {}
+    });
+
+    ViewModel.extend = extend;
+
+    if (typeof define === 'function' && define.amd) {
+        return ViewModel;
+    } else {
+        ko.ninjaViewModel = ViewModel;
+    }
+
+}));
+/*global define */
+
+(function (root, factory) {
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.baseStorage',[
             'underscore',
             'ko.ninja.events',
             'ko.ninja.extend'
@@ -307,8 +542,8 @@
 
     
 
-    //### ko.BaseModel
-    var BaseModel = function (options) {
+    //### ko.BaseStorage
+    var BaseStorage = function (options) {
 
         options = options || {};
 
@@ -317,6 +552,8 @@
         }
         
         _.extend(this, Events, {
+
+            options: {},
 
             idAttribute: 'id',
 
@@ -328,20 +565,32 @@
                     };
                 }
 
-                if (!this.name) {
+                if (!this.options.name) {
                     return {
                         error: true,
-                        message: 'This model has no name. Every model needs a name'
+                        message: 'This storage has no name. Every storage needs a name'
                     };
                 }
             },
 
             save: function (data, done) {
+
+                // If no data is passed in, send all of the observables off to be saved
+                if (!data) {
+                    data = {};
+                    _.each(this.observables, function (value, name) {
+                        data[name] = this[name]();
+                    }, this);
+                }
+
                 if (data[this.idAttribute]) {
                     return this.update(data[this.idAttribute], data, done);
                 } else {
                     return this.insert(data, done);
                 }
+            },
+
+            fetch: function () {
             }
             
         }, options);
@@ -349,12 +598,12 @@
 
     };
 
-    BaseModel.extend = extend;
+    BaseStorage.extend = extend;
 
     if (typeof define === 'function' && define.amd) {
-        return BaseModel;
+        return BaseStorage;
     } else {
-        ko.ninjaBaseModel = BaseModel;
+        ko.ninjaBaseStorage = BaseStorage;
     }
 
 }));
@@ -365,20 +614,20 @@
 
     // AMD
     if (typeof define === 'function' && define.amd) {
-        define('ko.ninja.localStorageModel',[
-            'ko.ninja.baseModel'
+        define('ko.ninja.localStorage',[
+            'ko.ninja.baseStorage'
         ], factory);
 
     // Non-AMD
     } else {
-        factory(root.ko.ninjaBaseModel, root.ko);
+        factory(root.ko.ninjaBaseStorage, root.ko);
     }
 
-} (this, function (BaseModel, ko) {
+} (this, function (BaseStorage, ko) {
 
     
 
-    var LocalStorageModel = BaseModel.extend({
+    var LocalStorageModel = BaseStorage.extend({
 
         find: function (data, done) {
             var response = [], match;
@@ -387,7 +636,7 @@
 
             if (!this.invalid()) {
                 for(var key in localStorage) {
-                    if (~key.indexOf(this.name + '-')) {
+                    if (~key.indexOf(this.options.name + '-')) {
                         match = true;
                         for (var value in data) {
                             if (data[value] !== JSON.parse(localStorage[key])[value]) {
@@ -408,7 +657,7 @@
 
         findOne: function (id, done) {
             if (!this.invalid()) {
-                done(JSON.parse(localStorage[this.name + '-' + id] || '{}'));
+                done(JSON.parse(localStorage[this.options.name + '-' + id] || '{}'));
                 
             } else {
                 done(this.invalid());
@@ -419,7 +668,7 @@
             done = done || function () {};
             data[this.idAttribute] = new Date().getTime();
             if (!this.invalid(data)) {
-                localStorage[this.name + '-' + data.id] = JSON.stringify(data);
+                localStorage[this.options.name + '-' + data.id] = JSON.stringify(data);
                 done(data);
             } else {
                 done(this.invalid(data));
@@ -428,8 +677,9 @@
 
         remove: function (id, done) {
             done = done || function () {};
+            id = id || this.getId();
             if (!this.invalid()) {
-                delete localStorage[this.name + '-' + id];
+                delete localStorage[this.options.name + '-' + id];
                 done(null);
             } else {
                 done(this.invalid());
@@ -440,10 +690,16 @@
             done = done || function () {};
             if (!this.invalid(data)) {
                 data[this.idAttribute] = id;
-                localStorage[this.name + '-' + id] = JSON.stringify(data);
+                localStorage[this.options.name + '-' + id] = JSON.stringify(data);
                 done(data);
             } else {
                 done(this.invalid(data));
+            }
+        },
+
+        initialize: function (options) {
+            if (options && options.options) {
+                this.options = options.options;
             }
         }
 
@@ -527,6 +783,12 @@
             self.AJAX.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
             self.AJAX.send(passData);
 
+          } else if (/delete/i.test(postMethod)) {
+            uri = urlCall+'?'+self.updating.getTime();
+            self.AJAX.open('DELETE', uri, true);
+            self.AJAX.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            self.AJAX.send(passData);
+
           } else {
             uri = urlCall + '?' + passData + '&timestamp=' + (self.updating.getTime());
             self.AJAX.open('GET', uri, true);
@@ -556,27 +818,27 @@
 
     // AMD
     if (typeof define === 'function' && define.amd) {
-        define('ko.ninja.httpModel',[
-            'ko.ninja.baseModel',
+        define('ko.ninja.httpStorage',[
+            'ko.ninja.baseStorage',
             'ko.ninja.ajax',
             'underscore'
         ], factory);
 
     // Non-AMD
     } else {
-        factory(root.ko.ninjaBaseModel, root.ko.ninjaAjax, root._, root.ko);
+        factory(root.ko.ninjaBaseStorage, root.ko.ninjaAjax, root._, root.ko);
     }
 
-} (this, function (BaseModel, Ajax, _, ko) {
+} (this, function (BaseStorage, Ajax, _, ko) {
 
     
 
-    var HttpModel = BaseModel.extend({
+    var HttpStorage = BaseStorage.extend({
 
         suffix: '',
 
         urlRoot: function () {
-            return ((this.name) ? '/' + this.name : '') + '/';
+            return ((this.options.name) ? '/' + this.options.name : '') + '/';
         },
 
         ajax: function (params) {
@@ -648,6 +910,9 @@
 
         remove: function (id, done) {
             done = done || function () {};
+            if (!id) {
+                id = this.getId();
+            }
             this.ajax({
                 url: this.urlRoot() + id + this.suffix,
                 method: 'DELETE',
@@ -657,6 +922,9 @@
 
         update: function (id, data, done) {
             done = done || function () {};
+            if (!id) {
+                id = this.getId();
+            }
             this.ajax({
                 url: this.urlRoot() + id + this.suffix,
                 method: 'PUT',
@@ -668,9 +936,9 @@
     });
 
     if (typeof define === 'function' && define.amd) {
-        return HttpModel;
+        return HttpStorage;
     } else {
-        ko.ninjaHttpModel = HttpModel;
+        ko.ninjaHttpStorage = HttpStorage;
     }
 
 }));
@@ -681,21 +949,21 @@
 
     // AMD
     if (typeof define === 'function' && define.amd) {
-        define('ko.ninja.socketModel',[
-            'ko.ninja.baseModel',
+        define('ko.ninja.socketStorage',[
+            'ko.ninja.baseStorage',
             'underscore'
         ], factory);
 
     // Non-AMD
     } else {
-        factory(root.ko.ninjaBaseModel, root._, root.ko);
+        factory(root.ko.ninjaBaseStorage, root._, root.ko);
     }
 
-} (this, function (BaseModel, _, ko) {
+} (this, function (BaseStorage, _, ko) {
 
     
 
-    var SocketModel = BaseModel.extend({
+    var SocketStorage = BaseStorage.extend({
 
         find: function (query, done) {
             if (!done) {
@@ -707,6 +975,9 @@
         },
 
         findOne: function (id, done) {
+            if (!id) {
+                id = this.getId();
+            }
             this.socket.emit(this.messageNames.findOne, {
                 id: id
             }, done);
@@ -719,12 +990,18 @@
         },
 
         remove: function (id, done) {
+            if (!id) {
+                id = this.getId();
+            }
             this.socket.emit(this.messageNames.remove, {
                 id: id
             }, done);
         },
 
         update: function (id, data, done) {
+            if (!id) {
+                id = this.getId();
+            }
             this.socket.emit(this.messageNames.update, {
                 id: id,
                 data: data
@@ -733,25 +1010,34 @@
 
         initialize: function (options) {
 
-            this.socket = io.connect((options.protocol || 'http')+ '://' + (options.hostName || 'localhost') + ':' + (options.port || '8080'));
+            options = options || {};
+
+            this.options = _.extend({
+                protocol: 'http',
+                hostName: 'localhost',
+                port: 8080,
+                name: 'list'
+            }, options.options || {});
+
+            this.socket = io.connect(this.options.protocol + '://' + this.options.hostName + ':' + this.options.port);
 
             // This lets us override the message names if we want to
             this.messageNames = _.extend({
-                'update': options.name + '-update',
-                'insert': options.name + '-insert',
-                'find': options.name + '-find',
-                'findOne': options.name + '-findOne',
-                'remove': options.name + '-remove'
-            }, options.messageNames || {});
+                'update': this.options.name + '-update',
+                'insert': this.options.name + '-insert',
+                'find': this.options.name + '-find',
+                'findOne': this.options.name + '-findOne',
+                'remove': this.options.name + '-remove'
+            }, this.options.messageNames || {});
             
         }
 
     });
 
     if (typeof define === 'function' && define.amd) {
-        return SocketModel;
+        return SocketStorage;
     } else {
-        ko.ninjaSocketModel = SocketModel;
+        ko.ninjaSocketStorage = SocketStorage;
     }
 
 }));
@@ -763,44 +1049,47 @@
 
     // AMD
     if (typeof define === 'function' && define.amd) {
-        define('ko.ninja.model',[
+        define('ko.ninja.storage',[
             'ko.ninja.extend',
-            'ko.ninja.localStorageModel',
-            'ko.ninja.httpModel',
-            'ko.ninja.socketModel'
+            'ko.ninja.localStorage',
+            'ko.ninja.httpStorage',
+            'ko.ninja.socketStorage'
         ], factory);
 
     // Non-AMD
     } else {
-        factory(root.ko.ninjaExtend, root.ko.ninjaLocalStorageModel, root.ko.ninjaSocketModel);
+        factory(root.ko.ninjaExtend, root.ko.ninjaLocalStorageStorage, root.ko.ninjaSocketStorage);
     }
 
-} (this, function (extend, LocalStorageModel, HttpModel, SocketModel) {
+} (this, function (extend, LocalStorageStorage, HttpStorage, SocketStorage) {
 
     
 
-    var Model = function (options) {
-        var model;
-        switch (options.storage) {
+    var Storage = function (options) {
+        var storage;
+        if (!options || !options.options || !options.options.storage) {
+            return {};
+        }
+        switch (options.options.storage) {
             case 'http':
-                model = new HttpModel(options);
+                storage = new HttpStorage(options);
                 break;
             case 'socket.io':
-                model = new SocketModel(options);
+                storage = new SocketStorage(options);
                 break;
-            default:
-                model = new LocalStorageModel(options);
+            case 'localStorage':
+                storage = new LocalStorageStorage(options);
                 break;
         }
-        return model;
+        return storage;
     };
 
-    Model.extend = extend;
+    Storage.extend = extend;
 
     if (typeof define === 'function' && define.amd) {
-        return Model;
+        return Storage;
     } else {
-        ko.ninjaModel = Model;
+        ko.ninjaStorage = Storage;
     }
 
 }));
@@ -941,161 +1230,501 @@
 
     // AMD
     if (typeof define === 'function' && define.amd) {
-        define('ko.ninja.viewModel',[
+        define('ko.ninja.observables',[
             'knockout',
-            'underscore',
-            'ko.ninja.events',
-            'ko.ninja.extend',
-            'ko.ninja.model',
-            'ko.ninja.validation'
+            'underscore'
         ], factory);
 
     // Non-AMD
     } else {
-        factory(root.ko, root._, root.ko.ninjaEvents, root.ko.ninjaExtend, root.ko.ninjaModel, root.ko.ninjaValidation);
+        factory(root.ko, root._);
     }
 
-} (this, function (ko, _, Events, extend, Model, Validation) {
+} (this, function (ko, _) {
 
     
 
-    var setupObservables = function(options) {
-        var computedObservables = _.functions(this.observables);
+    var Observables = {
 
-        computedObservables = _.reduce(this.observables, function(memo, value, prop) {
-            if (_.isObject(value) && !_.isArray(value) && (value.read || value.write)) {
-                memo.push(prop);
-            }
-            return memo;
-        }, computedObservables);
+        /**
+        * @method _setupObservables
+        * @param {Object} options
+        */
+        _setupObservables: function(options) {
 
-        // Process the observables first
-        _.each(_.omit(this.observables, computedObservables), function (value, prop) {
-            if (_.isArray(value)) {
-                if (ko.isObservable(options[prop])) {
-                    this[prop] = options[prop];
-                }
-                else {
-                    this[prop] = ko.observableArray((options[prop] || value).slice(0));
-                }
-            }
-            else {
-                if (ko.isObservable(options[prop])) {
-                    this[prop] = options[prop];
-                }
-                else {
-                    this[prop] = ko.observable(options[prop] || value);
-                }
+            if (!this.observables || !options) {
+                return;
             }
 
-            this[prop].subscribe(function(value) {
-                this.trigger('change:' + prop, value);
+            var computedObservables;
+
+            _.each(options, function (value, name) {
+                if (!_.isUndefined(this.observables[name])) {
+                    this.observables[name] = value;
+                    delete options[name];
+                }
             }, this);
-        }, this);
 
-        // Now process the computedObservables
-        _.each(_.pick(this.observables, computedObservables), function(value, prop) {
-            this[prop] = ko.computed({
-                read: this.observables[prop],
-                write: function () {
-                    // Keeps it from breaking.
-                    // Perhaps we need a way to allow writing to computed observables, though
-                },
-                owner: this
-            }, this);
-        }, this);
-    };
+            computedObservables = _.functions(this.observables);
 
-    var setupValidation = function() {
+            computedObservables = _.reduce(this.observables, function(memo, value, prop) {
+                if (_.isObject(value) && !_.isArray(value) && (value.read || value.write)) {
+                    memo.push(prop);
+                }
+                return memo;
+            }, computedObservables);
 
-    };
-
-    var setupModel = function () {
-        var self = this,
-            sync = function () {
-                var data = {};
-                _.each(self.observables, function (val, name) {
-                    data[name] = self[name]();
-                });
-                self.model.save(data, function () {});
-            }, debounceSync = _.debounce(sync, 1);
-
-        if (!this.model.status) {
-            this.model = new Model(this.model);
-        }
-
-        // This keeps the model from autoSyncing if the viewModel has autoSync: false
-        // defined on it.
-        if (this.autoSync !== false) {
-            this.autoSync = true;
-        }
-
-        this.fetch = function (done) {
-            var self = this,
-                autoSync = this.autoSync;
-
-            this.autoSync = false;
-            this.model.findOne(this[this.idAttribute || 'id'](), function (data) {
-                _.each(data, function (value, name) {
-                    if (typeof self[name] === 'function') {
-                        self[name](value);
+            // Process the observables first
+            _.each(_.omit(this.observables, computedObservables), function (value, prop) {
+                if (_.isArray(value)) {
+                    if (ko.isObservable(options[prop])) {
+                        this[prop] = options[prop];
                     }
-                });
-                self.autoSync = autoSync;
-                if (_.isFunction(done)) {
-                    done();
+                    else {
+                        this[prop] = ko.observableArray((options[prop] || value).slice(0));
+                    }
                 }
-            });
-        };
+                else {
+                    if (ko.isObservable(options[prop])) {
+                        this[prop] = options[prop];
+                    }
+                    else {
+                        this[prop] = ko.observable(options[prop] || value);
+                    }
+                }
 
-        _.each(this.observables, function (val, name) {
-            self[name].subscribe(function () {
-                if (self.autoSync && !self.validateAll().length) {
-                    debounceSync();
-                }
-            });
-        });
+                this[prop].subscribe(function(value) {
+                    this.trigger('change:' + prop, value);
+                }, this);
+            }, this);
+
+            // Now process the computedObservables
+            _.each(_.pick(this.observables, computedObservables), function(value, prop) {
+                this[prop] = ko.computed({
+                    read: this.observables[prop],
+                    write: function () {
+                        // Keeps it from breaking.
+                        // Perhaps we need a way to allow writing to computed observables, though
+                    },
+                    owner: this
+                }, this);
+            }, this);
+        }
+
     };
 
-    //### ko.ViewModel
-    var ViewModel = function ViewModel(options) {
+    if (typeof define === 'function' && define.amd) {
+        return Observables;
+    } else {
+        ko.ninjaClass = Observables;
+    }
+
+}));
+/*global define */
+
+(function (root, factory) {
+
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.model',[
+            'underscore',
+            'ko.ninja.extend',
+            'ko.ninja.storage',
+            'knockout',
+            'ko.ninja.validation',
+            'ko.ninja.observables',
+            'ko.ninja.events',
+            'ko.ninja.pubsub'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root._, root.ko.ninjaExtend, root.ko.ninjaStorage, root.ko, root.ko.ninjaValidation, root.ko.ninjaObservables, root.ko.ninjaEvents, root.ko.ninjaPubSub);
+    }
+
+} (this, function (_, extend, Storage, ko, Validation, Observables, Events, PubSub) {
+
+    
+
+    var Model = function (options) {
 
         options = options || {};
 
-        setupObservables.call(this, options);
-
-        this.watchValidations();
+        this._setupObservables.call(this, options);
+        
+        _.extend(this, new Storage(_.extend({}, this, options)));
 
         if (this.validation) {
-            setupValidation.call(this);
+            this.watchValidations();
         }
 
-        this.initialize.apply(this, arguments);
+        // Setup Pub / Sub
+        this._setupSubscriptions(options);
+
+        this.initialize(options);
+    };
+
+    _.extend(Model.prototype, Events, Observables, Validation, PubSub, {
+
+        idAttribute: 'id',
+
+        /**
+        * Returns the Id
+        * @method getId
+        */
+        getId: function () {
+            return this[this.idAttribute]();
+        },
+
+        /**
+        * @method get
+        * @param {String} name
+        */
+        get: function (name) {
+            if (!this[name]) {
+                throw 'get observable not found';
+            }
+            return this[name]();
+        },
+
+        /**
+        * @method set
+        * @param {String} name
+        * @param {Object} value
+        */
+        set: function (name, value) {
+
+            // Take an entire object and set all of the observables with it
+            if (_.isObject(name)) {
+                for (var item in name) {
+                    if (name.hasOwnProperty(item)) {
+                        this.set(item, name[item]);
+                    }
+                }
+
+            // Set a single observable
+            } else if (_.isFunction(this[name]) && this[name]() !== value) {
+                this[name](value);
+            }
+        },
+
+        /**
+        * @method has
+        * @param {String} name
+        */
+        has: function (name) {
+            if (!this[name]) {
+                return;
+            }
+            return !!this[name]();
+        },
+
+        /**
+        * @method clear
+        */
+        clear: function () {
+            _.each(this.observables, function (observable, name) {
+                this[name](null);
+            }, this);
+        },
+
+        /**
+        * @method toJSON
+        */
+        toJSON: function () {
+            var json = {};
+            _.each(this.observables, function (observable, name) {
+                json[name] = this[name]();
+            }, this);
+            return json;
+        },
+
+        /**
+        * @method autoSync
+        * @param {Boolean} autoSync
+        * @param {Boolean} fetch Fetch the data right away
+        */
+        autoSync: function (autoSync, fetch) {
+
+            var self = this;
+
+            if (autoSync) {
+
+                // Grab the data right away
+                if (fetch) {
+                    this.findOne(this.getId(), function (data) {
+                        self.set(data);
+                    });
+                }
+
+                // Automatically save the data when a change occurs
+                _.each(this.observables, function (value, name) {
+                    this[name].subscribe(function () {
+                        self.save();
+                    });
+                }, this);
+            }
+        },
+
+        initialize: function () {}
+
+    });
+
+    Model.extend = extend;
+
+    if (typeof define === 'function' && define.amd) {
+        return Model;
+    } else {
+        ko.ninjaModel = Model;
+    }
+
+}));
+/*global define */
+
+(function (root, factory) {
+
+    
+
+    // AMD
+    if (typeof define === 'function' && define.amd) {
+        define('ko.ninja.collection',[
+            'ko.ninja.extend',
+            'knockout',
+            'underscore',
+            'ko.ninja.storage',
+            'ko.ninja.events',
+            'ko.ninja.pubsub'
+        ], factory);
+
+    // Non-AMD
+    } else {
+        factory(root.ko.ninjaExtend, root.ko, root._, root.ko.ninjaStorage, root.ko.ninjaEvents, root.ko.ninjaPubSub);
+    }
+
+} (this, function (extend, ko, _, Storage, Events, PubSub) {
+
+    
+
+    var Collection = function (models) {
+
+        this.options = this.options || {};
+
+        var _conditions = {},
+            _autoSync = false,
+            Store = Storage.extend({}),
+            _storage = new Store({
+                options: this.options
+            });
+
+        _.extend(this, {
+
+            _models: ko.observableArray([]),
+
+            /**
+            * Converts the collection to JSON
+            * @method toJSON
+            * @returns {Array}
+            */
+            toJSON: function () {
+                var models = this._models(),
+                    json = [];
+                for (var i = 0; i < models.length; i++) {
+                    json.push(models[i].toJSON());
+                }
+                return json;
+            },
+
+            /**
+            * Adds a model to the end of the collection
+            * @method push
+            * @param {Object} data the model data
+            * @param {Object} options
+            *   @param {Number} options.position The position to insert the model at
+            */
+            insert: function (data, options) {
+
+                var model;
+
+                // Make sure there is no id getting inserted
+                if (!data[this.model.prototype.idAttribute]) {
+                    data[this.model.prototype.idAttribute] = null;
+                }
+                data.options = _.extend(this.options, this.model.prototype.options || {});
+
+                model = new this.model(data);
+
+                if (options && _.isNumber(options.position))     {
+                    this._models.splice(options.position, 0, model);
+                } else {
+                    this._models.push(model);
+                }
+                if (_autoSync && model.save) {
+                    model.save(null, function (data) {
+                        model.set(data);
+                    });
+                }
+            },
+
+            /**
+            * Removes a model from the collection
+            * @method remove
+            * @param {String} id
+            */
+            remove: function (id) {
+
+                var i;
+                if (!id) {
+                    return;
+                }
+
+                if (_.isArray(id)) {
+                    for (i = 0; i < id.length; i++) {
+                        this.remove(id[i]);
+                    }
+                } else {
+                    for (i = 0; i < this._models().length; i++) {
+                        if (this._models()[i].getId() === id) {
+                            if (_autoSync && this._models()[i].remove) {
+                                this._models()[i].remove();
+                            }
+                            this._models.splice(i, 1);
+                        }
+                    }
+                }
+            },
+
+            /**
+            * Returns all of the models
+            * @method find
+            * @returns {Array} models
+            */
+            find: function (where) {
+
+                var models = [],
+                    match = true;
+
+                _conditions = where || {};
+
+                if (!_conditions) {
+                    return this._models();
+                } else {
+                    for (var i = 0; i < this._models().length; i++) {
+                        match = true;
+                        for (var condition in _conditions) {
+                            if (_conditions.hasOwnProperty(condition)) {
+                                if (_conditions[condition] !== this._models()[i][condition]()) {
+                                    match = false;
+                                }
+                            }
+                        }
+                        if (match) {
+                            models.push(this._models()[i]);
+                        }
+                    }
+                    return models;
+                }
+            },
+
+            /**
+            * Gets the data from the backend services
+            * @method fetch
+            * @param {Object} where Conditions to send to the server
+            */
+            fetch: function (where) {
+                var self = this, models = [];
+                where = where || _conditions || {};
+                if (_storage.find) {
+                    _storage.find(where, function (data) {
+                        for (var i = 0; i < data.length; i++) {
+                            models.push(new self.model(_.extend(data[i], {
+                                options: _.extend(self.options, self.model.prototype.options || {})
+                            })));
+                        }
+                        self._models(models);
+                    });
+                }
+            },
+
+            /**
+            * Returns the model that matches the ID that is passed in
+            * @method get
+            * @param {String} id
+            * @returns {Object} model
+            */
+            get: function (id) {
+                var returns;
+                for (var i = 0; i < this._models().length; i++) {
+                    if (this._models()[i].getId() === id) {
+                        returns = this._models()[i];
+                    }
+                }
+                return returns;
+            },
+
+            /**
+            * Returns the number of models in the collection
+            * @method count
+            * @returns {Number}
+            */
+            count: function () {
+                return this._models().length;
+            },
+
+            /**
+            * Returns the sorted version of the array base on the sorting function that is passed in
+            * @method sort
+            * @param {String} name The observable to sort by
+            * @param {Boolean} desc Sort in descending order
+            */
+            sort: function (name, desc) {
+                this._models.sort(function (a, b) {
+                    return (desc) ? a[name]() < b[name]() : a[name]() > b[name]();
+                });
+            },
+
+            /**
+            * Makes the collection automatically sync with backend services any time there is a change
+            * @method autoSync
+            * @param {Boolean} autoSync When this is set to true, we automatically sync the collection, if it is set to false, we don't
+            */
+            autoSync: function (autoSync) {
+                var models = this._models();
+
+                if (autoSync) {
+                    this.fetch();
+                    _autoSync = true;
+                } else if (_autoSync) {
+                    _autoSync = false;
+                }
+
+                // Update the models to autosync with the collection
+                for (var i = 0; i < models.length; i++) {
+                    models[i].autoSync(autoSync);
+                }
+
+            }
+
+        });
 
         if (this.model) {
-            setupModel.call(this, options);
+            this.model.prototype.storage = this.storage;
+            _.each(models || [{}], this.insert, this);
         }
 
-        if (this.autoSync) {
-            this.fetch();
-        }
-
-        if (this.el) {
-            ko.applyBindings(this, (typeof this.el === 'object') ? this.el : document.querySelector(this.el)[0]);
-        }
+        this._setupSubscriptions(this);
 
     };
 
-    _.extend(ViewModel.prototype, Events, Validation, {
-        initialize: function() {}
-    });
+    _.extend(Collection.prototype, Events, PubSub);
 
-    ViewModel.extend = extend;
+    Collection.extend = extend;
 
     if (typeof define === 'function' && define.amd) {
-        return ViewModel;
+        return Collection;
     } else {
-        ko.ninjaViewModel = ViewModel;
+        ko.ninjaCollection = Collection;
     }
 
 }));
@@ -1110,29 +1739,26 @@
             'underscore',
             'knockout',
             'ko.ninja.viewModel',
-            'ko.ninja.model'
+            'ko.ninja.model',
+            'ko.ninja.collection'
         ], factory);
 
     // Non-AMD
     } else {
-        factory(root._, root.ko, root.ko.ninjaViewModel, root.ko.ninjaModel);
+        factory(root._, root.ko, root.ko.ninjaViewModel, root.ko.ninjaModel, root.ko.ninjaCollection);
     }
 
-} (this, function (_, ko, ViewModel, Model) {
+} (this, function (_, ko, ViewModel, Model, Collection) {
 
     
 
     ko.ViewModel = ViewModel;
     ko.Model = Model;
+    ko.Collection = Collection;
 
     // AMD
     if (typeof define === 'function' && define.amd) {
         return ko;
-
-    // Non-AMD
-    } else {
-        ko.ViewModel = ViewModel;
-        ko.Model = Model;
     }
 
 }));

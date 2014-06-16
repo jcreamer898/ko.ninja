@@ -1,15 +1,17 @@
 define([
-    'ko.ninja.httpModel'
-], function (Model) {
+    'ko.ninja.httpStorage'
+], function (Storage) {
 
-    module('ko.HttpModel', {
+    module('ko.httpStorage', {
         setup: function () {
-            this.model = new Model({
-                name: 'friends',
+            this.storage = new Storage({
+                options: {
+                    name: 'friends',
+                    storage: 'http'
+                },
                 urlRoot: function () {
                     return '/friends/';
-                },
-                storage: 'http'
+                }
             });
         },
         teardown: function () {
@@ -18,28 +20,28 @@ define([
     });
 
     asyncTest('when the user attempts to find an array of records', function () {
-        this.model.find(function (data) {
-            equal(typeof data, 'object', 'the model should return an array');
+        this.storage.find(function (data) {
+            equal(typeof data, 'object', 'the storage should return an array');
             start();
         });
     });
 
     asyncTest('when the user attempts to find a single record', function () {
-        this.model.findOne(1, function (data) {
-            equal(data.id, '1', 'the model should find a match');
+        this.storage.findOne(1, function (data) {
+            equal(data.id, '1', 'the storage should find a match');
             start();
         });
     });
 
     asyncTest('when the user attempts to create a new record', function () {
         var self = this;
-        this.model.insert({
+        this.storage.insert({
             firstName: 'Linus',
             lastName: 'Cadenhead'
         }, function (data) {
-            self.model.findOne(data.id, function (data) {
-                equal(data.firstName, 'Linus', 'the model should have inserted the first name');
-                equal(data.lastName, 'Cadenhead', 'the model should have inserted the last name');
+            self.storage.findOne(data.id, function (data) {
+                equal(data.firstName, 'Linus', 'the storage should have inserted the first name');
+                equal(data.lastName, 'Cadenhead', 'the storage should have inserted the last name');
                 start();
             });
         });
@@ -47,15 +49,15 @@ define([
 
     asyncTest('when the user attempts to update an existing record', function () {
         var self = this;
-        self.model.insert({
+        self.storage.insert({
             firstName: 'Linus',
             lastName: 'Cadenhead'
         }, function (data) {
-            self.model.update(data.id, {
+            self.storage.update(data.id, {
                 firstName: 'Milo',
                 lastName: 'Cadenhead'
             }, function (data) {
-                equal(data.firstName, 'Milo', 'the model should have been updated');
+                equal(data.firstName, 'Milo', 'the storage should have been updated');
                 start();
             });
         });
