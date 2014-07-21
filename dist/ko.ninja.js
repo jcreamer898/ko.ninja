@@ -1,4 +1,3 @@
-
 /*global define */
 
 (function (root, factory) {
@@ -1058,7 +1057,7 @@
 
     // Non-AMD
     } else {
-        factory(root.ko.ninjaExtend, root.ko.ninjaLocalStorageStorage, root.ko.ninjaSocketStorage);
+        factory(root.ko.ninjaExtend, root.ko.ninjaLocalStorage, root.ko.ninjaSocketStorage);
     }
 
 } (this, function (extend, LocalStorageStorage, HttpStorage, SocketStorage) {
